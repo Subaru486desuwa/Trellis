@@ -7,8 +7,8 @@
 </p>
 
 <p align="center">
-<strong>给 AI 立规矩的开源框架</strong><br/>
-<sub>支持 Claude Code、Cursor、OpenCode、Codex、Kiro、Kilo、Gemini CLI、Antigravity、Windsurf、Qoder、CodeBuddy、GitHub Copilot、Droid 和 Pi Agent。</sub>
+<strong>让 AI coding 从一次性聊天，变成团队可复用的工程流程。</strong><br/>
+<sub>Trellis 不是另一个 coding agent，而是给 Claude Code、Cursor、OpenCode、Codex、Gemini CLI 等工具加上项目级规范、任务上下文、记忆和验收流程的开源工作流框架。</sub>
 </p>
 
 <p align="center">
@@ -36,62 +36,105 @@
 <img src="assets/trellis-demo-zh.gif" alt="Trellis 工作流演示" width="100%">
 </p>
 
-## 为什么用 Trellis？
+## 先看这三件事
 
-| 能力 | 带来的改变 |
+| 如果你正在遇到 | Trellis 做什么 |
 | --- | --- |
-| **自动注入规范** | 将规范沉淀到 `.trellis/spec/` 之后，Trellis 会在每次会话中按当前任务自动按需注入相关上下文，无需反复说明。 |
-| **任务驱动工作流** | PRD、实现上下文、审查上下文与任务状态统一存放于 `.trellis/tasks/`，AI 开发过程保持结构化、可追溯。 |
-| **项目记忆** | `.trellis/workspace/` 中的工作日志（journal）会保留上一次会话的脉络，因此每次新会话都能基于真实上下文开始。 |
-| **团队共享标准** | Spec 随仓库一同版本化，个人总结出的规则与流程可以直接成为整个团队的基础设施。 |
-| **多平台复用** | 同一套 Trellis 结构覆盖 14 个 AI coding 平台，无需为每个工具单独搭建工作流。 |
+| 每次开新会话都要重新解释项目背景、代码风格和禁忌 | 把规则沉淀到 `.trellis/spec/`，让相关上下文按任务自动注入 |
+| AI 写完代码后没人兜底，结果很难复现、很难审查 | 把 PRD、实现记录、验收记录放进 `.trellis/tasks/`，形成可追溯任务链 |
+| 团队里有人用 Claude Code，有人用 Cursor/Codex/OpenCode，规则到处散 | 用同一套项目结构生成各平台入口，让标准跟着仓库走 |
 
-## 前置要求
+Trellis 的核心价值很简单：**把“我怎么让 AI 好好干活”这件事，从个人提示词变成项目基础设施。**
+
+## 快速开始
+
+### 前置要求
 
 - **Node.js** >= 18
 - **Python** >= 3.9
 
-## 快速开始
+### 1. 安装 Trellis
 
 ```bash
-# 1. 安装 Trellis
 npm install -g @mindfoldhq/trellis@latest
+```
 
-# 2. 在仓库中初始化
+### 2. 初始化你的仓库（二选一）
+
+如果只想先跑通基础流程：
+
+```bash
 trellis init -u your-name
+```
 
-# 3. 或仅初始化你实际使用的平台
+如果已经知道团队会用哪些平台，初始化时直接带上平台参数：
+
+```bash
 trellis init --cursor --opencode --codex -u your-name
 ```
 
-查看 [快速开始](https://docs.trytrellis.app/zh/start/install-and-first-task) 与 [支持平台](https://docs.trytrellis.app/zh/advanced/multi-platform) 指南以了解详细配置步骤。
+然后在你的 coding agent 里从 Trellis 命令开始，例如 `/trellis:start` 或平台对应的入口命令。
 
-## 如何使用
+更多步骤见 [快速开始](https://docs.trytrellis.app/zh/start/install-and-first-task) 与 [支持平台](https://docs.trytrellis.app/zh/advanced/multi-platform)。
 
-使用流程非常简单：
+## Trellis 的核心目录
 
-1. **用自然语言描述你的需求。**
-2. **与 AI 一起头脑风暴**，一次只回答一个问题，直到 PRD 足够清晰，然后开始实现。
-3. **交由 AI 自主推进** —— AI 会调用 `trellis-implement` 编写代码，并自动依据 Spec、lint、type-check 与测试进行校验。
-4. **当工作完成或会话上下文接近上限时，输入 `/trellis:finish-work`**。Trellis 会归档任务并更新工作日志。
+```text
+.trellis/
+├── spec/        # 项目规范：代码风格、架构边界、测试要求、团队约定
+├── tasks/       # 任务上下文：PRD、研究记录、实现记录、验收记录
+├── workspace/   # 开发者工作日志：跨会话记忆和进展衔接
+├── scripts/     # 平台同步、hook 和辅助脚本
+├── config.yaml  # Trellis 项目配置
+└── workflow.md  # 工作流说明：如何规划、实现、检查和收尾
+```
 
-## 工作原理
+核心规范、任务记录和工作日志可以进入 Git；本地运行状态会被 `.trellis/.gitignore` 排除。也就是说，团队可以像 review 代码一样 review AI 工作流本身。
 
-Trellis 内部运行一个 4 阶段循环，skill 与子代理均由系统自动调用：
+## 工作流长什么样
 
-1. **Plan（规划）** —— `trellis-brainstorm` 逐题梳理需求并写入 `prd.md`；涉及资料调研的部分派发给 `trellis-research` 子代理处理。阶段产出为一组精选的 Spec 与研究文件，由 `implement.jsonl` / `check.jsonl` 编排。
-2. **Implement（实现）** —— `trellis-implement` 子代理依据 PRD 编写代码，所需上下文已按 `implement.jsonl` 自动注入，不会执行 git commit。
-3. **Verify（验证）** —— `trellis-check` 子代理基于 diff 对照 Spec 逐项核查，并运行 lint、type-check 与测试，在能力范围内自动修复。
-4. **Finish（收尾）** —— 执行最终检查后，`trellis-update-spec` 将本轮新增的认知沉淀回 `.trellis/spec/`，为下一次会话积累上下文。
+1. **Plan（规划）**：`trellis-brainstorm` 逐题澄清需求，写出 `prd.md`；需要调研时派发 `trellis-research`。
+2. **Implement（实现）**：`trellis-implement` 根据 PRD 和自动注入的 spec 写代码，不擅自提交。
+3. **Verify（验证）**：`trellis-check` 对照 diff、spec、lint、type-check、测试做验收，并尽量自修复。
+4. **Finish（收尾）**：运行最终检查，归档任务，把本轮新学到的规则沉淀回 `.trellis/spec/`。
+
+结果是：下一次会话不再从零开始，团队也不必靠口口相传维护 AI 使用经验。
+
+## 支持的平台
+
+Trellis 是项目层 harness，不绑定单一模型或单一 IDE。目前覆盖：
+
+- Claude Code
+- Cursor
+- OpenCode
+- Codex
+- Kiro / Kilo
+- Gemini CLI
+- Antigravity
+- Windsurf
+- Qoder
+- CodeBuddy
+- GitHub Copilot
+- Droid
+- Pi Agent
+
+如果你的团队同时使用多种 AI coding 工具，Trellis 可以让它们共享同一份项目规范和任务上下文。
+
+## 适合谁
+
+- **个人开发者**：希望 AI 记住项目规则、延续上次进度、减少重复提示。
+- **小团队**：希望把某个人调教 AI 的经验变成团队可复用资产。
+- **开源项目维护者**：希望贡献者和 agent 都按同一套规范理解项目。
+- **高频使用 AI coding 的团队**：希望把任务规划、实现、验收和复盘串成稳定流程。
 
 ## 资源
 
 | 需求 | 链接 |
 | --- | --- |
-| 在仓库中安装 Trellis | [快速开始](https://docs.trytrellis.app/zh/start/install-and-first-task) |
-| 了解各平台之间的差异 | [支持平台](https://docs.trytrellis.app/zh/advanced/multi-platform) |
-| 查看实际使用场景 | [真实场景](https://docs.trytrellis.app/zh/start/real-world-scenarios) |
-| 从 Spec 模板起步 | [Spec 模板](https://docs.trytrellis.app/zh/templates/specs-index) |
+| 5 分钟跑通第一个任务 | [快速开始](https://docs.trytrellis.app/zh/start/install-and-first-task) |
+| 了解平台差异和初始化参数 | [支持平台](https://docs.trytrellis.app/zh/advanced/multi-platform) |
+| 看真实项目如何使用 | [真实场景](https://docs.trytrellis.app/zh/start/real-world-scenarios) |
+| 从规范模板开始搭建 | [Spec 模板](https://docs.trytrellis.app/zh/templates/specs-index) |
 | 跟进版本更新 | [更新日志](https://docs.trytrellis.app/zh/changelog) |
 
 ## 常见问题
@@ -99,35 +142,35 @@ Trellis 内部运行一个 4 阶段循环，skill 与子代理均由系统自动
 <details>
 <summary><strong>Trellis 与 <code>CLAUDE.md</code>、<code>AGENTS.md</code>、<code>.cursorrules</code> 有何区别？</strong></summary>
 
-这些文件本身是有用的入口，但容易在长期使用中变得冗长臃肿。Trellis 在此之上补充了：作用域明确的 Spec、按任务划分的 PRD、工作流关卡、工作区记忆，以及按平台自动生成的适配文件。
+这些文件是入口，Trellis 是围绕入口建立的一套项目级工作流。它不仅生成平台需要的规则文件，还会维护作用域明确的 spec、按任务划分的 PRD、实现/检查上下文、开发者工作日志和收尾沉淀流程。
 
 </details>
 
 <details>
-<summary><strong>Trellis 是否仅支持 Claude Code？</strong></summary>
+<summary><strong>Trellis 是不是只适合 Claude Code？</strong></summary>
 
-并非如此。Trellis 是项目层基础设施，可在多种 coding agent 与 IDE 中使用。
-
-</details>
-
-<details>
-<summary><strong>Trellis 适合个人开发者还是团队？</strong></summary>
-
-两者皆可。个人开发者主要受益于记忆机制与可复用的工作流；团队使用收益更大——标准统一、任务边界清晰、上下文可审查，且具备跨平台可移植性。
+不是。Trellis 不替代 Claude Code、Cursor、Codex 或 OpenCode；它给这些工具提供同一套项目上下文和工程流程。你可以在团队里混用不同工具。
 
 </details>
 
 <details>
-<summary><strong>是否需要手动编写每一个 Spec 文件？</strong></summary>
+<summary><strong>会不会很重？我只是想让 AI 记住项目规则。</strong></summary>
 
-并不需要。多数团队的做法是先由 AI 基于现有代码生成初稿，再人工收紧关键规则。Trellis 的效果取决于是否将高价值规则显式化并纳入版本管理。
+可以从很轻的用法开始：先 `trellis init`，把最重要的规则写进 `.trellis/spec/`。等你需要更强的可追溯性，再使用任务 PRD、检查代理和收尾归档。
 
 </details>
 
 <details>
-<summary><strong>团队协作时是否会频繁产生冲突？</strong></summary>
+<summary><strong>是否需要手动编写每一个 spec？</strong></summary>
 
-不会。个人工作区的 journal 按开发者独立维护，共享的 Spec 与任务则进入仓库，可以像其他项目产物一样进行评审与改进。
+不需要。常见做法是先让 AI 基于现有代码生成初稿，再由团队把真正高价值、容易踩坑、必须遵守的规则收紧。Trellis 的目标不是堆文档，而是沉淀能改变结果的上下文。
+
+</details>
+
+<details>
+<summary><strong>团队协作时会不会频繁冲突？</strong></summary>
+
+共享 spec 和任务记录进入仓库，可以被 review；个人 workspace journal 按开发者独立维护，避免大家同时改同一份私人记录。
 
 </details>
 
