@@ -1,0 +1,9 @@
+{
+  "version": "0.5.20",
+  "description": "Rebrand consistency + ultracode adaptation hardening",
+  "breaking": false,
+  "recommendMigrate": false,
+  "changelog": "Complete @subaru486 rebrand (README badges/links, CI/lint filters, release-gate scripts, bundled-skill install paths); ultracode -ultra gated to class-1 platforms; in_progress-ultra recursion guard; +3 regression tests.",
+  "migrations": [],
+  "notes": "No migration required."
+}
