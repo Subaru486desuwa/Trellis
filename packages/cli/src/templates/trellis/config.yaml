@@ -88,3 +88,25 @@ max_journal_lines: 2000
 #
 # codex:
 #   dispatch_mode: inline  # or "sub-agent" to dispatch trellis-* sub-agents
+
+#-------------------------------------------------------------------------------
+# Ultracode (fan-out dispatch)
+#-------------------------------------------------------------------------------
+# Ultracode = Claude Code's "Workflow" tool: large-scale parallel agent
+# orchestration. class-1 platforms only; codex does NOT support fan-out
+# (sub-agent isolation) and ignores this switch entirely.
+#
+# When enabled, the planning / in_progress breadcrumbs switch to their *-ultra
+# variants: research + check fan out by default (multiple trellis-research /
+# trellis-check agents in parallel via the Workflow tool); implement stays
+# single unless the prd decomposes into independent units. See workflow.md
+# "Trellis × Ultracode" for the full protocol.
+#
+# Leave commented out to keep the default (single sub-agent dispatch). Even with
+# this off, a single-turn "Ultracode is on" system-reminder still triggers the
+# inline fallback line baked into the base breadcrumbs.
+#
+# Accepts: true / false / yes / no / 1 / 0 / on / off (case-insensitive).
+#
+# ultracode:
+#   enabled: true

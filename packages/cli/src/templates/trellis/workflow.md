@@ -130,6 +130,20 @@ python3 ./.trellis/scripts/get_context.py --mode phase --step <X.Y>  # detailed 
                                     explicit in_progress→completed
                                     transition)
 
+  DISPATCH-MODE VARIANTS (resolve_breadcrumb_key picks one per platform/config):
+    [workflow-state:<status>-inline] → codex inline dispatch_mode (main session
+                                       edits code directly); codex-only.
+    [workflow-state:<status>-ultra]  → ultracode fan-out (config
+                                       ultracode.enabled), non-codex platforms
+                                       only. Only planning / in_progress carry
+                                       ultra bodies; any other <status>-ultra
+                                       falls back to the base status via
+                                       build_breadcrumb. Codex and ultracode are
+                                       mutually exclusive — resolve_breadcrumb_key
+                                       returns inside the codex branch before the
+                                       ultracode check, so no -inline-ultra
+                                       combination ever exists.
+
   Editing checklist:
     - When you change a [workflow-state:STATUS] block, also check the
       matching phase's `[required · once]` walkthrough steps for sync
@@ -169,6 +183,7 @@ No active task. **A Direct answer** — pure Q&A / explanation / lookup / chat; 
 Load the `trellis-brainstorm` skill and iterate on prd.md with the user.
 Phase 1.3 (required, once): before `task.py start`, you MUST curate `implement.jsonl` and `check.jsonl` — list the spec / research files sub-agents need so they get the right context injected. You may skip only if the jsonl already has agent-curated entries (the seed `_example` row alone doesn't count).
 Then run `task.py start <task-dir>` to flip status to in_progress.
+**Ultracode**: if this turn shows an "Ultracode is on" system-reminder (single-turn ultracode without `ultracode.enabled` in config), switch to fan-out per the "Trellis × Ultracode" section — research fans out, but the Phase 1.3 jsonl curation above still applies. This overrides the single-pass default for this turn only.
 [/workflow-state:planning]
 
 <!-- Per-turn breadcrumb: shown throughout Phase 1 when codex.dispatch_mode=inline.
@@ -182,6 +197,19 @@ Load the `trellis-brainstorm` skill and iterate on prd.md with the user.
 Phase 1.3 jsonl curation is **skipped** in inline dispatch mode — the main session loads `trellis-before-dev` directly in Phase 2 and reads spec context itself, so there is no sub-agent to inject jsonl into.
 Then run `task.py start <task-dir>` to flip status to in_progress.
 [/workflow-state:planning-inline]
+
+<!-- Per-turn breadcrumb: shown throughout Phase 1 when ultracode is on
+     (config ultracode.enabled, resolved by inject-workflow-state.py's
+     resolve_breadcrumb_key for non-codex platforms). Ultracode fan-out
+     variant of [workflow-state:planning]: research fans out via the Workflow
+     tool. Phase 1.3 jsonl curation is still required (regression invariant). -->
+
+[workflow-state:planning-ultra]
+Load the `trellis-brainstorm` skill and iterate on prd.md with the user.
+**Ultracode is on — research fans out**: when a topic has independent sub-questions, dispatch MULTIPLE `trellis-research` sub-agents in parallel (one per angle) via the Workflow tool instead of a single serial pass. Each dispatch prompt MUST still start with `Active task: <task path from \`task.py current\`>` so each agent resolves its own `{task_dir}/research/` to write into. See the "Trellis × Ultracode" section for the fan-out protocol. (If the Workflow tool is unavailable, fall back to several sequential `trellis-research` dispatches.)
+Phase 1.3 (required, once): before `task.py start`, you MUST curate `implement.jsonl` and `check.jsonl` — list the spec / research files sub-agents need so they get the right context injected. Fan-out does not change this: curate the jsonl AFTER the parallel research lands, folding in every `{task_dir}/research/*.md` worth injecting. You may skip only if the jsonl already has agent-curated entries (the seed `_example` row alone doesn't count).
+Then run `task.py start <task-dir>` to flip status to in_progress.
+[/workflow-state:planning-ultra]
 
 ### Phase 2: Execute
 - 2.1 Implement `[required · repeatable]`
@@ -201,6 +229,7 @@ Then run `task.py start <task-dir>` to flip status to in_progress.
 **Sub-agent self-exemption**: if you are already running as `trellis-implement`, implement directly from the loaded task context and do NOT spawn another `trellis-implement`; if you are already running as `trellis-check`, review/fix directly and do NOT spawn another `trellis-check`. The default dispatch rule applies to the main session only.
 **Sub-agent dispatch protocol (all platforms, all sub-agents)**: When you spawn `trellis-implement` / `trellis-check` / `trellis-research`, your dispatch prompt **MUST** start with one line: `Active task: <task path from \`task.py current\`>`. No exceptions. On class-2 platforms (codex / copilot / gemini / qoder) the sub-agent depends on this line because there is no hook to inject task context. On class-1 platforms (claude / cursor / opencode / kiro / codebuddy / droid) the line is normally redundant — the hook injects context directly — but it serves as a critical fallback when the hook fails (Windows + Claude Code PreToolUse silent skip, `--continue` resume, fork distribution, hooks disabled, etc.). For `trellis-research`, the line tells the sub-agent which `{task_dir}/research/` to write into.
 **Inline override** (per-turn only, escape hatch for sub-agent dispatch): the user's CURRENT message MUST explicitly contain one of: "do it inline" / "no sub-agent" / "你直接改" / "别派 sub-agent" / "main session 写就行" / "不用 sub-agent". **Without seeing one of these phrases you must NOT inline on your own**; do not invent an override the user never said.
+**Ultracode**: if this turn shows an "Ultracode is on" system-reminder (single-turn ultracode without `ultracode.enabled` in config), switch to fan-out per the "Trellis × Ultracode" section — check fans out across review dimensions via the Workflow tool, implement stays single unless decomposable, and the Phase 3.4 commit stays main-driven. This overrides the single-dispatch default above for this turn only.
 [/workflow-state:in_progress]
 
 <!-- Per-turn breadcrumb: shown while status='in_progress' when
@@ -213,6 +242,25 @@ Then run `task.py start <task-dir>` to flip status to in_progress.
 **Main-session default (inline dispatch_mode)**: the main agent edits code directly. Do NOT dispatch `trellis-implement` / `trellis-check` sub-agents. Load the `trellis-before-dev` skill before writing code; load the `trellis-check` skill before reporting completion.
 Phase 3.4 commit (required, once): after `trellis-update-spec`, or whenever implementation is verifiably complete, the main agent **drives the commit** — state the commit plan in user-facing text, then run `git commit` — BEFORE suggesting `/trellis:finish-work`. `/finish-work` refuses to run on a dirty working tree (paths outside `.trellis/workspace/` and `.trellis/tasks/`).
 [/workflow-state:in_progress-inline]
+
+<!-- Per-turn breadcrumb: shown while status='in_progress' when ultracode is on
+     (config ultracode.enabled, non-codex platforms). Ultracode fan-out variant
+     of [workflow-state:in_progress]: check fans out across review dimensions via
+     the Workflow tool; implement stays single by default. Covers the same
+     required steps as the base block — Phase 3.4 commit stays main-driven
+     (regression invariant). Codex never reaches this variant (see
+     resolve_breadcrumb_key). -->
+
+[workflow-state:in_progress-ultra]
+**Tools**: `trellis-implement` / `trellis-research` are sub-agent types only — dispatch them via the Task/Agent tool OR a Workflow `agent()` call (NOT Skill). `trellis-update-spec` is a skill. `trellis-check` exists as both; prefer the Agent / Workflow form when verifying after code changes.
+**Flow**: implement → check → trellis-update-spec → commit (Phase 3.4) → `/trellis:finish-work`.
+**Ultracode is on — check fans out (main-session default)**: instead of one `trellis-check` sub-agent, drive a Workflow pipeline that dispatches MULTIPLE `trellis-check` agents in parallel — one per review dimension (spec compliance / cross-layer data flow / security & resource safety / adversarial edge-case verification) — then the main session reconciles their findings and decides what to fix. See the "Trellis × Ultracode" section for the check pipeline template. If the Workflow tool is unavailable, fall back to several sequential `trellis-check` dispatches.
+**Implement stays single by default**: dispatch ONE `trellis-implement` sub-agent as usual. Only when the prd decomposes into independent, non-overlapping units may you fan out implement across a Workflow pipeline with per-unit worktree isolation (experimental — requires the task dir already committed; see the Trellis × Ultracode section).
+**Workflow agent context (no hook injection)**: a Workflow `agent()` call does NOT trigger the context-injection hook, so there is no `<!-- trellis-hook-injected -->` marker — each agent self-loads prd + jsonl spec via its "Trellis Context Loading Protocol". Every dispatch prompt MUST start with `Active task: <task path from \`task.py current\`>`, passed RELATIVE to repo root. **Check fan-out runs at repo root, NOT in a worktree** so the agent's cwd resolves the repo-root-relative jsonl paths.
+**Workflow agents NEVER commit**: `trellis-implement` / `trellis-check` are forbidden from `git commit` / `push` / `merge` — fan-out does not relax this.
+**Phase 3.4 commit (required, once)**: after the fan-out check reconciles green and `trellis-update-spec` runs, the MAIN session — not any Workflow agent — **drives the commit**: state the commit plan in user-facing text, then run `git commit`, BEFORE suggesting `/trellis:finish-work`. If implement fan-out used worktrees, merge those worktree branches back into the task branch FIRST so the main working tree is clean. `/finish-work` refuses to run on a dirty working tree (paths outside `.trellis/workspace/` and `.trellis/tasks/`).
+**Inline override** (per-turn only): if the user's CURRENT message contains "do it inline" / "no sub-agent" / "你直接改" / "别派 sub-agent" / "main session 写就行" / "不用 sub-agent", drop fan-out and edit directly this turn.
+[/workflow-state:in_progress-ultra]
 
 ### Phase 3: Finish
 - 3.1 Quality verification `[required · repeatable]`
@@ -627,6 +675,76 @@ The AI drives a batched commit of this task's code changes so `/finish-work` can
 #### 3.5 Wrap-up reminder
 
 After the above, remind the user they can run `/finish-work` to wrap up (archive the task, record the session).
+
+---
+
+## Trellis × Ultracode
+
+"Ultracode" is Claude Code's Workflow tool — large-scale parallel agent orchestration. This section is the protocol the `*-ultra` breadcrumbs point to. It lets Trellis fan out research/check across many agents while keeping every Trellis discipline (spec/jsonl context, prd-driven work, commit ownership).
+
+### When it activates
+
+Two channels, either one:
+
+1. **Config-persistent** — `.trellis/config.yaml` sets `ultracode.enabled: true`. `inject-workflow-state.py`'s `resolve_breadcrumb_key` then serves the `planning-ultra` / `in_progress-ultra` breadcrumbs (non-codex platforms only).
+2. **Single-turn** — the turn shows an "Ultracode is on" system-reminder even though config is off. The base `planning` / `in_progress` breadcrumbs carry an `**Ultracode**:` fallback line telling you to switch to this protocol for that turn only.
+
+Codex never activates ultracode — its `fork_turns="none"` sub-agent isolation can't fan out, and `resolve_breadcrumb_key` returns in the codex branch first. If the Workflow tool isn't available on your platform, degrade gracefully to several sequential Task/Agent dispatches.
+
+### What fans out
+
+| Phase | Default under ultracode | Notes |
+|---|---|---|
+| 1.2 Research | **fan-out** | One `trellis-research` agent per independent angle, in parallel. Each writes its own `{task_dir}/research/*.md`. |
+| 2.1 Implement | **single** (default) | Dispatch ONE `trellis-implement`. Fan out only when the prd splits into independent, non-overlapping units (experimental — see Worktree below). |
+| 2.2 / 3.1 Check | **fan-out** | Multiple `trellis-check` agents, one per review dimension; the main session reconciles. |
+| 3.4 Commit | **main session only** | Never a Workflow agent. Identical to the base flow. |
+
+The discipline is unchanged — fan-out only multiplies *executors*. The prd still drives, the jsonl still defines context, and the main session still owns the commit.
+
+### How a Workflow agent inherits Trellis context
+
+A Workflow `agent()` call does NOT go through the PreToolUse context-injection hook, so the agent receives no `<!-- trellis-hook-injected -->` marker. That is fine: the `trellis-implement` / `trellis-check` / `trellis-research` agent definitions all carry a "Context Loading Protocol" fallback for exactly this case — when the marker is absent, the agent reads `prd.md` + the `*.jsonl` spec files itself from the active task path. (This fallback was written for hook failures — Windows, `--continue` resume, fork distribution — and the Workflow path is just another "no marker" case.)
+
+So every Workflow dispatch prompt MUST start with:
+
+```
+Active task: <task path from `task.py current`>
+```
+
+passed RELATIVE to repo root. The agent resolves prd/jsonl against its own cwd, which is why **check / research fan-out must run at repo root, not in a worktree** — a worktree cwd may not contain the (possibly uncommitted) task dir.
+
+### Check pipeline template
+
+A minimal `in_progress-ultra` check fan-out. The Workflow JS parser rejects nested template literals and full-width quotes — use plain string concatenation and half-width quotes only.
+
+```javascript
+// trellis-check fan-out: parallel review dimensions, main session reconciles.
+// <TASK> = repo-root-relative task dir, substituted by the main session.
+const TASK = ".trellis/tasks/06-08-example";
+const ACTIVE = "Active task: " + TASK + "\n\n";
+const dims = [
+  { n: "spec",        body: "dimension SPEC COMPLIANCE only. Read " + TASK + "/prd.md and every spec in " + TASK + "/check.jsonl, then git diff and verify the change follows them. Fix directly. No git commit/push/merge. No re-spawn." },
+  { n: "cross-layer", body: "dimension CROSS-LAYER DATA FLOW only. Load " + TASK + "/prd.md + check.jsonl specs. Trace changed data across layers; flag type/contract/validation breaks. Fix directly. No git commit. No re-spawn." },
+  { n: "security",    body: "dimension SECURITY and RESOURCE SAFETY only. Load " + TASK + "/prd.md. Check authz, injection, leaked secrets, unbounded loops, leaks, money-path correctness. Fix directly. No git commit. No re-spawn." },
+  { n: "adversarial", body: "dimension ADVERSARIAL VERIFICATION only. Load " + TASK + "/prd.md. Assume the diff is wrong; build concrete failing/edge inputs and prove pass/fail. REPORT only, do not silent-fix (main reconciles). No git commit. No re-spawn." },
+];
+const outs = [];
+for (const d of dims) {
+  outs.push(agent(ACTIVE + "You are trellis-check, " + d.body, { agentType: "trellis-check" }));
+}
+const results = [];
+for (let i = 0; i < dims.length; i++) results.push("### " + dims[i].n + "\n" + (await outs[i]));
+return results.join("\n\n");
+// main session: merge findings -> fix or dispatch a single trellis-implement ->
+// converge green -> Phase 3.4 commit (main-driven).
+```
+
+The first three dimensions may fix non-overlapping concerns directly; the adversarial dimension reports only, so concurrent agents never write the same file. If write conflicts are still a concern, make all dimensions report-only and let the main session apply fixes serially.
+
+### Implement worktree fan-out (experimental)
+
+Only when the prd decomposes into independent units. Preconditions: the task dir is **already committed** (so each worktree, cut from a commit, contains `prd.md` + jsonl); each unit gets its own worktree via `isolation: "worktree"`. Agents write but do NOT commit; the main session merges the worktree branches back into the task branch BEFORE the Phase 3.4 commit, so the main working tree is clean for `/trellis:finish-work`. Keep this off unless the user asks for it — most implement work is a single coherent change that should not be force-split.
 
 ---
 

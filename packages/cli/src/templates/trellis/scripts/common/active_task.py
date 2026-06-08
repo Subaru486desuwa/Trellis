@@ -25,6 +25,13 @@ DIR_RUNTIME = ".runtime"
 DIR_SESSIONS = "sessions"
 DIR_CURSOR_SHELL = "cursor-shell"
 CURSOR_SHELL_TICKET_TTL_SECONDS = 30
+# A single lingering session file from a closed/dead window must not hijack a new
+# session's breadcrumb through the single-session fallback. Only inherit a
+# fallback session whose last_seen_at is within this window; older pointers are
+# treated as abandoned (→ no active task, to be surfaced as resumable rather than
+# silently forced onto the next window). Live sessions stay fresh because the
+# per-turn breadcrumb hook calls touch_session_last_seen.
+SESSION_FALLBACK_MAX_AGE_SECONDS = 1800
 TASK_SESSION_COMMANDS = {"start", "current", "finish"}
 
 _SESSION_KEYS = ("session_id", "sessionId", "sessionID")
@@ -515,12 +522,47 @@ def _resolve_single_session_fallback(repo_root: Path) -> ActiveTask | None:
     if not task_ref:
         return None
 
+    # Staleness gate: a fallback session file older than the freshness window is
+    # an abandoned/closed window. Don't auto-inherit its task into a new session
+    # (the "dead session hijacks the live breadcrumb" wart). Files without a
+    # parseable last_seen_at keep the legacy inherit behaviour (fail-open).
+    last_seen = _parse_iso_to_epoch(_string_value(context.get("last_seen_at")))
+    if last_seen is not None and (time.time() - last_seen) > SESSION_FALLBACK_MAX_AGE_SECONDS:
+        return None
+
     fallback_key = session_file.stem
     return _active_from_ref(task_ref, repo_root, "session-fallback", fallback_key)
 
 
 def _utc_now() -> str:
     return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+
+
+def _parse_iso_to_epoch(ts: str | None) -> float | None:
+    """Parse an ISO-8601 timestamp (as written by _utc_now) to epoch seconds."""
+    if not ts or not isinstance(ts, str):
+        return None
+    try:
+        return datetime.fromisoformat(ts.strip().replace("Z", "+00:00")).timestamp()
+    except (ValueError, TypeError):
+        return None
+
+
+def touch_session_last_seen(repo_root: Path, context_key: str | None) -> None:
+    """Refresh last_seen_at on an existing session file so a live session stays
+    inside the fallback freshness window (SESSION_FALLBACK_MAX_AGE_SECONDS).
+
+    No-op when the file is absent — we never create a session file here; only
+    set_active_task does. Called once per turn by the breadcrumb hook.
+    """
+    if not context_key:
+        return
+    path = _context_path(repo_root, context_key)
+    context = _read_json(path)
+    if context is None:
+        return
+    context["last_seen_at"] = _utc_now()
+    _write_json(path, context)
 
 
 def _context_metadata(

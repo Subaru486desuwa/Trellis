@@ -270,18 +270,55 @@ def _codex_mode_banner(config: dict) -> str:
     return f"<codex-mode>{mode}</codex-mode>"
 
 
+def _ultracode_enabled(config: dict) -> bool:
+    """True when .trellis/config.yaml has ``ultracode.enabled`` set truthy.
+
+    Drives the config-persistent channel of ultracode fan-out: when on,
+    ``resolve_breadcrumb_key`` returns the ``{status}-ultra`` breadcrumb variant
+    for non-codex platforms. Codex is excluded by the caller — fan-out needs
+    parallel sub-agents, which Codex's ``fork_turns="none"`` isolation forbids.
+
+    Accepts bool ``True`` or the usual truthy strings/ints
+    (``true`` / ``yes`` / ``on`` / ``1``), matching the case-insensitive
+    convention used elsewhere in config.yaml.
+    """
+    if not isinstance(config, dict):
+        return False
+    uc = config.get("ultracode")
+    if not isinstance(uc, dict):
+        return False
+    val = uc.get("enabled")
+    if isinstance(val, bool):
+        return val
+    if isinstance(val, (int, float)):
+        return val != 0
+    if isinstance(val, str):
+        return val.strip().lower() in ("true", "yes", "on", "1")
+    return False
+
+
 def resolve_breadcrumb_key(
     status: str, platform: str | None, config: dict
 ) -> str:
-    """Pick the breadcrumb tag key based on Codex dispatch_mode.
+    """Pick the breadcrumb tag key based on platform / dispatch mode.
 
-    Codex defaults to ``inline`` because sub-agents run with ``fork_turns="none"``
-    isolation and can't inherit the parent session's task context. Users can
-    opt into ``codex.dispatch_mode: sub-agent`` in ``.trellis/config.yaml``
-    to use the parallel ``<status>-inline`` tag → ``<status>`` flip. Invalid
-    or missing values fall back to inline.
+    Two orthogonal dispatch dimensions, resolved in priority order:
 
-    Non-codex platforms return the plain status unchanged.
+    1. **Codex** (checked first, returns immediately): defaults to ``inline``
+       because sub-agents run with ``fork_turns="none"`` isolation and can't
+       inherit the parent session's task context. ``codex.dispatch_mode:
+       sub-agent`` opts into the ``<status>-inline`` → ``<status>`` flip. Codex
+       NEVER enters the ultracode branch — fan-out is incompatible with its
+       sub-agent isolation, and returning here prevents a ``-inline-ultra``
+       variant explosion.
+
+    2. **Ultracode** (non-codex only): when ``ultracode.enabled`` is set in
+       config.yaml, return the ``{status}-ultra`` variant so the breadcrumb
+       steers the main agent toward Workflow fan-out (research + check). Missing
+       ``*-ultra`` tags fall back to the base status via ``build_breadcrumb``,
+       so only planning/in_progress need ultra bodies.
+
+    Plain status otherwise.
     """
     if platform == "codex":
         mode = "inline"
@@ -292,6 +329,8 @@ def resolve_breadcrumb_key(
                 if cfg_mode in ("inline", "sub-agent"):
                     mode = cfg_mode
         return f"{status}-inline" if mode == "inline" else status
+    if _ultracode_enabled(config):
+        return f"{status}-ultra"
     return status
 
 
@@ -345,6 +384,17 @@ def main() -> int:
     platform = _detect_platform(data)
     config = _read_trellis_config(root)
     task = get_active_task(root, data)
+    # Refresh this session's last_seen_at (no-op if it has no session file) so the
+    # single-session fallback's staleness gate never ages out a live window.
+    try:
+        from common.active_task import (  # type: ignore[import-not-found]
+            resolve_context_key,
+            touch_session_last_seen,
+        )
+
+        touch_session_last_seen(root, resolve_context_key(data, platform))
+    except Exception:
+        pass
     if task is None:
         # No active task — still emit a breadcrumb nudging AI toward
         # trellis-brainstorm + task.py create when user describes real work.

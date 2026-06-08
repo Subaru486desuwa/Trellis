@@ -59,6 +59,58 @@ function loadBreadcrumbs(directory) {
 }
 
 /**
+ * Minimal .trellis/config.yaml reader for the ultracode flag.
+ *
+ * The repo's YAML is hand-parsed by trellis_config.py without boolean coercion,
+ * so `enabled: true` may be stored as the string "true". We accept the string
+ * forms ("true"/"yes"/"on"/"1") as well as a bare boolean. Anything else
+ * (missing file/block, false, malformed) → false. Scans only the top-level
+ * `ultracode:` block's `enabled:` child; no full YAML parse needed.
+ */
+function isUltracodeEnabled(directory) {
+  const configPath = join(directory, ".trellis", "config.yaml")
+  if (!existsSync(configPath)) return false
+  let content
+  try {
+    content = readFileSync(configPath, "utf-8")
+  } catch {
+    return false
+  }
+  let inUltracode = false
+  for (const raw of content.split("\n")) {
+    const line = raw.replace(/\s+#.*$/, "") // strip " # ..." inline comment
+    if (/^\s*#/.test(line) || !line.trim()) continue
+    const indent = line.length - line.trimStart().length
+    if (indent === 0) {
+      inUltracode = /^ultracode\s*:/.test(line.trim())
+      continue
+    }
+    if (inUltracode) {
+      const m = line.trim().match(/^enabled\s*:\s*(.+)$/)
+      if (m) {
+        const v = m[1].trim().replace(/^['"]|['"]$/g, "").toLowerCase()
+        return v === "true" || v === "yes" || v === "on" || v === "1"
+      }
+    }
+  }
+  return false
+}
+
+/**
+ * Pick the breadcrumb tag key. The OpenCode plugin layer is always OpenCode
+ * (never codex), so there is no codex dispatch-mode branch here. When ultracode
+ * is enabled in config.yaml, serve the `${status}-ultra` breadcrumb variant —
+ * buildBreadcrumb falls back to the plain `${status}` tag if no -ultra block
+ * exists, so only planning/in_progress need ultra bodies.
+ */
+function resolveBreadcrumbKey(status, directory) {
+  if (isUltracodeEnabled(directory)) {
+    return `${status}-ultra`
+  }
+  return status
+}
+
+/**
  * Get (taskId, status) from active task, or null if no active task.
  */
 function getActiveTask(ctx, platformInput = null) {
@@ -89,8 +141,12 @@ function getActiveTask(ctx, platformInput = null) {
  *   "Refer to workflow.md for current step." line
  * - no_task pseudo-status (id === null) → header omits task info
  */
-function buildBreadcrumb(id, status, templates, source = null) {
-  let body = templates[status]
+function buildBreadcrumb(id, status, templates, source = null, breadcrumbKey = null) {
+  const lookupKey = breadcrumbKey || status
+  let body = templates[lookupKey]
+  if (body === undefined && lookupKey !== status) {
+    body = templates[status]
+  }
   if (body === undefined) {
     body = "Refer to workflow.md for current step."
   }
@@ -130,8 +186,20 @@ export default async ({ directory }) => {
           const templates = loadBreadcrumbs(directory)
           const task = getActiveTask(ctx, input)
           const breadcrumb = task
-            ? buildBreadcrumb(task.id, task.status, templates, task.source)
-            : buildBreadcrumb(null, "no_task", templates)
+            ? buildBreadcrumb(
+                task.id,
+                task.status,
+                templates,
+                task.source,
+                resolveBreadcrumbKey(task.status, directory),
+              )
+            : buildBreadcrumb(
+                null,
+                "no_task",
+                templates,
+                null,
+                resolveBreadcrumbKey("no_task", directory),
+              )
 
           const parts = output?.parts || []
           const textPartIndex = parts.findIndex(
