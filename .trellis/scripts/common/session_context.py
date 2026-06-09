@@ -18,7 +18,6 @@ from pathlib import Path
 
 from .config import get_git_packages
 from .git import run_git
-from .packages_context import get_packages_section
 from .tasks import iter_active_tasks, load_task, get_all_statuses, children_progress
 from .paths import (
     DIR_SCRIPTS,
@@ -469,12 +468,6 @@ def get_context_text(repo_root: Path | None = None) -> str:
     else:
         lines.append("No journal file found")
     lines.append("")
-
-    # Packages
-    packages_text = get_packages_section(repo_root)
-    if packages_text:
-        lines.append(packages_text)
-        lines.append("")
 
     # Paths
     lines.append("## PATHS")

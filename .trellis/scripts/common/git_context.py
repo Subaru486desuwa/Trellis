@@ -3,7 +3,7 @@
 """
 Git and Session Context utilities.
 
-Entry shim — delegates to session_context and packages_context.
+Entry shim — delegates to session_context.
 
 Provides:
     output_json - Output context in JSON format
@@ -22,10 +22,6 @@ from .session_context import (
     get_context_text_record,
     output_json,
     output_text,
-)
-from .packages_context import (
-    get_context_packages_text,
-    get_context_packages_json,
 )
 from .trellis_config import read_trellis_config
 from .workflow_phase import (
@@ -57,9 +53,9 @@ def main() -> None:
     parser.add_argument(
         "--mode",
         "-m",
-        choices=["default", "record", "packages", "phase"],
+        choices=["default", "record", "phase"],
         default="default",
-        help="Output mode: default (full context), record (for record-session), packages (package info only), phase (workflow step extraction)",
+        help="Output mode: default (full context), record (for record-session), phase (workflow step extraction)",
     )
     parser.add_argument(
         "--step",
@@ -77,11 +73,6 @@ def main() -> None:
             print(json.dumps(get_context_record_json(), indent=2, ensure_ascii=False))
         else:
             print(get_context_text_record())
-    elif args.mode == "packages":
-        if args.json:
-            print(json.dumps(get_context_packages_json(), indent=2, ensure_ascii=False))
-        else:
-            print(get_context_packages_text())
     elif args.mode == "phase":
         content = get_step(args.step) if args.step else get_phase_index()
         if not content.strip():
