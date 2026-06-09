@@ -113,24 +113,25 @@ describe("codex sub-agent recursion guard (issue #234)", () => {
   }
 });
 
-// A-soft: codex/hooks/session-start.py READY-state guidance and <guidelines>
-// block must include a sub-agent self-exemption clause so a Codex sub-agent
-// reading the same SessionStart context realizes the dispatch instruction
-// is for the main session, not for itself.
+// A-soft (slim rewrite): the recursion risk came from READY-state guidance
+// MANDATING sub-agent dispatch. The slim contract removed the mandate, so
+// the self-exemption clause lives in the workflow.md breadcrumb and the
+// codex agent role files instead. Pin the mandate's absence; the
+// SUB_AGENT_NOTICE prefix still tells spawned sub-agents to ignore the
+// workflow guidance entirely.
 describe("codex session-start.py sub-agent self-exemption (A-soft)", () => {
   const hookPath = path.join(
     repoRoot,
     "packages/cli/src/templates/codex/hooks/session-start.py",
   );
 
-  it("READY-state dispatch guidance includes a sub-agent self-exemption clause", () => {
+  it("READY-state guidance does not mandate dispatch; sub-agent notice stays", () => {
     const content = fs.readFileSync(hookPath, "utf-8");
-    // Distinct exemption phrase (avoid colliding with the existing
-    // "User override" escape hatch).
-    expect(content).toContain("Sub-agent self-exemption");
-    // Calls out both sub-agent kinds
-    expect(content).toMatch(/trellis-implement.*trellis-check|trellis-check.*trellis-implement/s);
-    // Tells the sub-agent the dispatch does NOT apply to it
-    expect(content).toMatch(/does NOT apply|not apply/);
+    expect(content).not.toContain("Next required action: dispatch");
+    expect(content).not.toContain(
+      "default is to NOT edit code in the main session",
+    );
+    expect(content).toContain("SUB-AGENT NOTICE");
+    expect(content).toContain("continue implementation in the main session");
   });
 });

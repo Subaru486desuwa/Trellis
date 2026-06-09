@@ -125,26 +125,23 @@ describe("shared-hooks capability table", () => {
     }
   });
 
-  // A-soft (issue #234 mirror): shared session-start.py — used by Claude /
-  // Cursor / Gemini / Qoder / CodeBuddy / Droid / Kiro — must include the
-  // same sub-agent self-exemption clauses that codex/hooks/session-start.py
-  // carries, so a sub-agent reading inherited SessionStart guidance does not
-  // spawn another trellis-implement / trellis-check.
-  it("shared session-start.py includes sub-agent self-exemption (A-soft)", () => {
+  // A-soft (issue #234, slim rewrite): the original recursion risk came from
+  // session-start MANDATING sub-agent dispatch — an inheriting sub-agent
+  // could loop. The slim contract removed the mandate (sub-agents are
+  // optional tools), so the self-exemption clause lives in the per-turn
+  // breadcrumb (workflow.md in_progress block) and the agent templates.
+  // Pin the mandate's absence so it cannot quietly return.
+  it("shared session-start.py does not mandate sub-agent dispatch (A-soft, slim)", () => {
     const sessionStart = getSharedHookScripts().find(
       (h) => h.name === "session-start.py",
     );
     expect(sessionStart, "session-start.py is missing from shared-hooks/").toBeDefined();
     const content = sessionStart ? sessionStart.content : "";
-    // Both READY-state status block AND <guidelines> block carry the
-    // exemption phrase (kept verbatim across both writers — see workflow-
-    // state-contract.md "Audit ALL Writers").
-    const matches = content.match(/Sub-agent self-exemption/g);
-    expect(matches, "expected at least 2 occurrences (status + guidelines)").not.toBeNull();
-    expect(matches ? matches.length : 0).toBeGreaterThanOrEqual(2);
-    // Anchor on the scope (does not apply / no spawn) so a future rewording
-    // still has to cover the actual contract.
-    expect(content).toMatch(/does NOT apply/);
-    expect(content).toMatch(/spawn another sub-agent|Do NOT spawn/i);
+    expect(content).not.toContain(
+      "default is to NOT edit code in the main session",
+    );
+    expect(content).not.toContain("Next required action: dispatch");
+    // Sub-agents stay mentioned as optional tools only.
+    expect(content).toContain("only when they genuinely help");
   });
 });

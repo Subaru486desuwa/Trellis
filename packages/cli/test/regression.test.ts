@@ -2409,7 +2409,7 @@ describe("regression: current-task path normalization", () => {
     }
   });
 
-  it("[session-start-proof] shared and Codex contexts include one-shot first-reply notice without changing payload shape", () => {
+  it("[session-start-proof] shared and Codex contexts omit the first-reply notice without changing payload shape", () => {
     setupTaskRepo();
 
     writeProjectFile(
@@ -2444,12 +2444,12 @@ describe("regression: current-task path normalization", () => {
       expect(payload.hookSpecificOutput.hookEventName).toBe("SessionStart");
 
       const ctx = payload.hookSpecificOutput.additionalContext;
-      expect(ctx).toContain("<first-reply-notice>");
-      expect(ctx).toContain(firstReplyNoticeSentence);
-      expect(ctx).toContain("This notice is one-shot");
-      expect(ctx.indexOf("<first-reply-notice>")).toBeLessThan(
-        ctx.indexOf("<current-state>"),
-      );
+      // The ceremonial first-reply notice was removed in the slim rewrite —
+      // it cost a sentence of every session's first reply and carried zero
+      // information. It must not come back.
+      expect(ctx).not.toContain("<first-reply-notice>");
+      expect(ctx).not.toContain(firstReplyNoticeSentence);
+      expect(ctx).toContain("<current-state>");
     }
   });
 
@@ -2535,7 +2535,7 @@ describe("regression: current-task path normalization", () => {
     );
   });
 
-  it("[workflow-v2] shared session-start READY guidance requires implement/check sub-agents", () => {
+  it("[workflow-v2] shared session-start READY guidance defaults to main-session implementation", () => {
     setupTaskRepo();
     writeSessionContext("claude_session-a", ".trellis/tasks/issue-106");
 
@@ -2548,17 +2548,15 @@ describe("regression: current-task path normalization", () => {
       path.join(".claude", "hooks", "session-start.py"),
       JSON.stringify({ cwd: tmpDir, session_id: "session-a" }),
     );
-    expect(rawOutput).toContain(
-      "Next required action: dispatch `trellis-implement`",
-    );
-    expect(rawOutput).toContain("default is to NOT edit code in the main session");
-    expect(rawOutput).toContain("dispatch `trellis-check`");
-    expect(rawOutput).not.toContain("if you stay in the main session");
+    // Slim contract: inline is the default, sub-agents are optional tools,
+    // and the hook never decides on the user's behalf to auto-continue.
+    expect(rawOutput).toContain("Status: READY");
+    expect(rawOutput).toContain("continue implementation in the main session");
+    expect(rawOutput).toContain("only when they genuinely help");
     expect(rawOutput).not.toContain(
-      "load `trellis-before-dev` before writing code",
+      "default is to NOT edit code in the main session",
     );
-    expect(rawOutput).not.toContain("If there is an active task, ask whether");
-    expect(rawOutput).toContain(
+    expect(rawOutput).not.toContain(
       "execute its Next required action without asking whether to continue",
     );
   });
@@ -3328,56 +3326,6 @@ print(len(entries))
     );
   });
 
-  it("[strip-breadcrumb] _strip_breadcrumb_tag_blocks only strips matched STATUS pairs (backreference parity with parser)", () => {
-    // Finding 1: the strip regex previously used [A-Za-z0-9_-]+ on both ends,
-    // accepting [workflow-state:A]...[/workflow-state:B]. The parser uses \1
-    // backreference to require matched STATUS. Tightening the strip regex to
-    // use the same backreference closes the contract gap.
-    const sessionStartScript = getSharedHookScripts().find(
-      (hook) => hook.name === "session-start.py",
-    )?.content;
-    writeProjectFile(
-      path.join(".claude", "hooks", "session-start.py"),
-      expectTemplateContent(sessionStartScript, "shared session-start"),
-    );
-
-    // Each probe writes a fenced result so newlines in stripped output are
-    // preserved; the JS side parses by splitting on the END marker.
-    const probe = [
-      "import importlib.util, pathlib, json",
-      "spec = importlib.util.spec_from_file_location('ss', pathlib.Path('.claude/hooks/session-start.py'))",
-      "mod = importlib.util.module_from_spec(spec)",
-      "spec.loader.exec_module(mod)",
-      "matched = '[workflow-state:planning]\\nbody\\n[/workflow-state:planning]'",
-      "mismatched = '[workflow-state:planning]\\nbody\\n[/workflow-state:in_progress]'",
-      "nested_orphan = '[workflow-state:planning]\\nbody1\\n[/workflow-state:other]\\ntail\\n[/workflow-state:planning]'",
-      "result = {'M': mod._strip_breadcrumb_tag_blocks(matched), 'X': mod._strip_breadcrumb_tag_blocks(mismatched), 'N': mod._strip_breadcrumb_tag_blocks(nested_orphan)}",
-      "print(json.dumps(result))",
-    ].join("; ");
-    const output = execSync(`${pythonCmd} -c ${JSON.stringify(probe)}`, {
-      cwd: tmpDir,
-      encoding: "utf-8",
-    });
-    const lastLine = output
-      .split("\n")
-      .filter((l) => l.startsWith("{"))
-      .pop();
-    const result = JSON.parse(lastLine ?? "{}") as Record<string, string>;
-
-    // Matched pair: stripped (empty string).
-    expect(result.M).toBe("");
-    // Mismatched pair: NOT stripped — full input preserved.
-    expect(result.X).toContain("[workflow-state:planning]");
-    expect(result.X).toContain("[/workflow-state:in_progress]");
-    // Nested orphan: outer pair matches via \1 backreference and gets
-    // stripped as one unit. Either fully stripped or fully preserved —
-    // never partial (no dangling [/workflow-state:other] orphan).
-    if (result.N !== "") {
-      expect(result.N).toContain("[workflow-state:planning]");
-      expect(result.N).toContain("[/workflow-state:planning]");
-    }
-  });
-
   it("[workflow-v2] get_context.py --mode phase returns Phase Index + Phase 1/2/3 step bodies", () => {
     writeTrellisScripts();
     writeProjectFile(path.join(".trellis", ".developer"), "name=test\n");
@@ -3550,7 +3498,7 @@ print(len(entries))
   // session-start.py <workflow> + <guidelines> block restructure
   // ------------------------------------------------------------
 
-  it("[workflow-v2] session-start.py <workflow> block contains Phase 1/2/3 step bodies", () => {
+  it("[workflow-v2] session-start.py <workflow> block is a compact pointer, not inlined step bodies", () => {
     writeTrellisScripts();
     writeProjectFile(path.join(".trellis", ".developer"), "name=test\n");
     writeProjectFile(
@@ -3574,14 +3522,18 @@ print(len(entries))
     if (!workflowMatch) throw new Error("workflow block not found in payload");
     const workflowBlock = workflowMatch[1];
 
-    // Step bodies inlined (not just TOC)
-    expect(workflowBlock).toContain("## Phase 1: Plan");
-    expect(workflowBlock).toContain("#### 1.1 Requirement exploration");
-    expect(workflowBlock).toContain("#### 2.1 Implement");
-    expect(workflowBlock).toContain("#### 3.3 Spec update");
-    // Breadcrumb tag BLOCKS (matched opening + closing pair) excluded — they're
-    // consumed by inject-workflow-state.py. Inline `[workflow-state:planning]`
-    // mentions in narrative prose are fine; only complete blocks are stripped.
+    // Compact pointer only — session-start no longer inlines workflow.md
+    // (the per-turn breadcrumb carries phase guidance; the guide stays on
+    // disk for on-demand reads). Step bodies must NOT be inlined.
+    expect(workflowBlock).toContain("Phase 1: Plan");
+    expect(workflowBlock).toContain("Phase 2: Execute");
+    expect(workflowBlock).toContain("Phase 3: Finish");
+    expect(workflowBlock).toContain(".trellis/workflow.md");
+    expect(workflowBlock).toContain("--mode phase --step");
+    expect(workflowBlock).not.toContain("#### 1.1 Requirement exploration");
+    expect(workflowBlock).not.toContain("#### 2.1 Implement");
+    // Breadcrumb tag BLOCKS excluded — they're consumed by
+    // inject-workflow-state.py per turn.
     const tagBlockRe =
       /\[workflow-state:([A-Za-z0-9_-]+)\]\s*\n[\s\S]*?\n\s*\[\/workflow-state:\1\]/;
     expect(tagBlockRe.test(workflowBlock)).toBe(false);
@@ -3594,7 +3546,7 @@ print(len(entries))
       path.join(".trellis", "workflow.md"),
       templateWorkflowMd(),
     );
-    // Guides — must be inlined
+    // Guides — paths-only like every other spec index (no inlining)
     writeProjectFile(
       path.join(".trellis", "spec", "guides", "index.md"),
       "# Thinking Guides\n\nGUIDES_INLINE_MARKER\n",
@@ -3622,15 +3574,14 @@ print(len(entries))
       throw new Error("guidelines block not found in payload");
     const guidelinesBlock = guidelinesMatch[1];
 
-    // guides/index.md stays inlined (cross-package thinking guides)
-    expect(guidelinesBlock).toContain("GUIDES_INLINE_MARKER");
+    // guides/index.md listed as a path, content NOT inlined (slim injection)
+    expect(guidelinesBlock).not.toContain("GUIDES_INLINE_MARKER");
+    expect(guidelinesBlock).toContain(".trellis/spec/guides/index.md");
     // Other package index listed as path, content NOT inlined
     expect(guidelinesBlock).toContain(".trellis/spec/cli/backend/index.md");
     expect(guidelinesBlock).not.toContain(
       "BACKEND_INDEX_CONTENT_SHOULD_NOT_APPEAR",
     );
-    // Pointer to discovery command
-    expect(guidelinesBlock).toContain("--mode packages");
   });
 
   // ------------------------------------------------------------
