@@ -25,9 +25,7 @@ workspace/
 
 ## Active Developers
 
-| Developer | Last Active | Sessions | Active File |
-|-----------|-------------|----------|-------------|
-| kleinhe | 2026-01-26 | 12 | journal-1.md |
+See each developer's own `index.md` under `workspace/<developer>/` — this table is no longer maintained centrally.
 
 ---
 
