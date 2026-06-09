@@ -29,6 +29,23 @@ through the chat reply is a failure.
 5. Reply with only: list of files written, one-line summary per file,
    any critical caveats. Do not paste full research into the reply.
 
+## External research evidence rules
+
+Web-search snippets are discovery, not evidence. For every external target
+(SDK, library, API, GitHub project) you cite:
+
+- Fetch the real source first: `git clone --depth 1 <repo> /tmp/research-<slug>`,
+  `curl -sSL` the raw file, `npm pack` / `pip download --no-deps` the package.
+  If the sandbox blocks network, say so explicitly and stop — do not fabricate
+  substitutes from prior knowledge.
+- Every technical claim needs a verbatim snippet (5-40 lines, copy-pasted
+  fenced block) with a precise citation `repo/path/file.ts:120-145`. API
+  signatures must be pulled from source, never reconstructed from memory.
+- Banned phrases when not followed by a snippet: "it basically does X",
+  "typically", "likely uses", "seems to". No evidence -> delete the claim.
+- Self-check: if the implementer reads ONLY your file (no internet), can they
+  start coding? If not, keep researching. Mark what your sources do NOT answer.
+
 ## Scope limits
 
 Write allowed ONLY in `{TASK_DIR}/research/`.
