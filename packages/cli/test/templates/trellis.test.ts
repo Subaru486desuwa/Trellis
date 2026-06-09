@@ -86,29 +86,28 @@ describe("trellis template constants", () => {
     expect(workflowMdTemplate).toContain("#");
   });
 
-  it("[issue-225] workflow.md in_progress breadcrumb has class-2 sub-agent dispatch protocol", () => {
+  it("[issue-225] workflow.md in_progress breadcrumb has universal sub-agent dispatch protocol", () => {
     // The in_progress breadcrumb instructs the main agent to prefix
-    // dispatch prompts with "Active task: <path>" on class-2 platforms.
-    // Without this line, codex/copilot/gemini/qoder sub-agents cannot
-    // find the active task (no PreToolUse hook to inject context).
+    // dispatch prompts with "Active task: <path>". Since the slim rewrite
+    // the protocol is universal (all platforms, all sub-agents) instead of
+    // class-2-scoped — hookless platforms depend on it, hooked platforms
+    // use it as the fallback when injection fails.
     const block = inProgressBreadcrumb();
     expect(block).toContain("Active task:");
-    expect(block.toLowerCase()).toContain("class-2");
-    expect(block).toMatch(/codex|copilot|gemini|qoder/);
+    expect(block).toContain("all platforms, all sub-agents");
+    expect(block).toContain("trellis-research");
   });
 
   it("[issue-237] workflow.md in_progress breadcrumb self-exempts implement/check sub-agents", () => {
     // The in_progress breadcrumb may be injected into sub-agent turns on some
-    // hosts, so its main-session dispatch guidance must not recursively apply
-    // to a sub-agent that is already doing the requested work.
+    // hosts, so its dispatch guidance must not recursively apply to a
+    // sub-agent that is already doing the requested work, and sub-agents
+    // must never own git state.
     const block = inProgressBreadcrumb();
-    expect(block).toContain("Main-session default");
-    expect(block).toContain("Sub-agent self-exemption");
-    expect(block).toContain("already running as `trellis-implement`");
-    expect(block).toContain("do NOT spawn another `trellis-implement`");
-    expect(block).toContain("already running as `trellis-check`");
-    expect(block).toContain("do NOT spawn another `trellis-check`");
-    expect(block).toContain("main session only");
+    expect(block).toContain("if you ARE one, work directly");
+    expect(block).toContain("don't spawn another");
+    expect(block).toContain("Sub-agents never run git commit/push/merge");
+    expect(block).toContain("main session");
   });
 
   it("[issue-237] workflow.md Phase 2 dispatch steps require prompt recursion guards", () => {

@@ -164,26 +164,26 @@ Phase 3: Finish  → distill lessons + wrap-up
 <!-- Per-turn breadcrumb: shown when there is no active task (before Phase 1) -->
 
 [workflow-state:no_task]
-No active task. **A Direct answer** — pure Q&A / explanation / lookup / chat; no file writes + one-line answer + repo reads ≤ 2 files → AI judges, no override needed.
-**B Create a task** — any implementation / code change / build / refactor work. Entry sequence: (1) `python3 ./.trellis/scripts/task.py create "<title>"` to create the task (status=planning, breadcrumb switches to [workflow-state:planning] for brainstorm + jsonl phase guidance) → (2) load `trellis-brainstorm` skill to discuss requirements with the user and iterate on prd.md → (3) once prd is done and jsonl is curated, run `task.py start <task-dir>` to enter [workflow-state:in_progress] for the implementation skeleton. **"It looks small" is NOT grounds for downgrading B to A or C**.
-**C Inline change** (per-turn only, escape hatch for B) — the user's CURRENT message MUST contain one of: "skip trellis" / "no task" / "just do it" / "don't create a task" / "跳过 trellis" / "别走流程" / "小修一下" / "直接改" / "先别建任务" → briefly acknowledge ("ok, skipping trellis flow this turn"), then inline. **Without seeing one of these phrases you must NOT inline on your own**; do not invent an override the user never said.
+No active task. Judge the turn's real size yourself:
+- Multi-turn implementation work, or anything worth a persistent record → `python3 ./.trellis/scripts/task.py create "<title>"`, brainstorm into prd.md, then `task.py start <task-dir>`.
+- Questions, quick fixes, one-shot edits → answer or do them inline; no task ceremony. If an inline change grows beyond expectations, create the task at that point.
 [/workflow-state:no_task]
 
 ### Phase 1: Plan
 - 1.0 Create task `[required · once]` (just `task.py create`; status enters planning)
 - 1.1 Requirement exploration `[required · repeatable]`
 - 1.2 Research `[optional · repeatable]`
-- 1.3 Configure context `[required · once]` — Claude Code, Cursor, OpenCode, Codex, Kiro, Gemini, Qoder, CodeBuddy, Copilot, Droid, Pi
+- 1.3 Configure context `[sub-agent dispatch only · once]` — Cursor, OpenCode, Codex (sub-agent mode), Kiro, Gemini, Qoder, CodeBuddy, Copilot, Droid, Pi
 - 1.4 Activate task `[required · once]` (run `task.py start`; status → in_progress)
 - 1.5 Completion criteria
 
 <!-- Per-turn breadcrumb: shown throughout Phase 1 (status='planning') -->
 
 [workflow-state:planning]
-Load the `trellis-brainstorm` skill and iterate on prd.md with the user.
-Phase 1.3 (required, once): before `task.py start`, you MUST curate `implement.jsonl` and `check.jsonl` — list the spec / research files sub-agents need so they get the right context injected. You may skip only if the jsonl already has agent-curated entries (the seed `_example` row alone doesn't count).
-Then run `task.py start <task-dir>` to flip status to in_progress.
-**Ultracode**: if this turn shows an "Ultracode is on" system-reminder (single-turn ultracode without `ultracode.enabled` in config), switch to fan-out per the "Trellis × Ultracode" section — research fans out, but the Phase 1.3 jsonl curation above still applies. This overrides the single-pass default for this turn only.
+Iterate on prd.md with the user (the `trellis-brainstorm` skill has the template); persist research to `{task_dir}/research/` — files survive compaction, chat doesn't.
+Phase 1.3 (only if Phase 2 will dispatch sub-agents): curate `implement.jsonl` / `check.jsonl` so sub-agents get spec context injected. Working inline (the default)? Skip it.
+When the prd is settled, run `task.py start <task-dir>`.
+**Ultracode**: if this turn shows an "Ultracode is on" system-reminder, research may fan out per the "Trellis × Ultracode" section.
 [/workflow-state:planning]
 
 <!-- Per-turn breadcrumb: shown throughout Phase 1 when codex.dispatch_mode=inline.
@@ -193,9 +193,8 @@ Then run `task.py start <task-dir>` to flip status to in_progress.
      into a sub-agent. -->
 
 [workflow-state:planning-inline]
-Load the `trellis-brainstorm` skill and iterate on prd.md with the user.
-Phase 1.3 jsonl curation is **skipped** in inline dispatch mode — the main session loads `trellis-before-dev` directly in Phase 2 and reads spec context itself, so there is no sub-agent to inject jsonl into.
-Then run `task.py start <task-dir>` to flip status to in_progress.
+Iterate on prd.md with the user; persist research to `{task_dir}/research/`. jsonl curation is skipped in inline mode — you read spec context yourself in Phase 2.
+When the prd is settled, run `task.py start <task-dir>`.
 [/workflow-state:planning-inline]
 
 <!-- Per-turn breadcrumb: shown throughout Phase 1 when ultracode is on
@@ -205,10 +204,9 @@ Then run `task.py start <task-dir>` to flip status to in_progress.
      tool. Phase 1.3 jsonl curation is still required (regression invariant). -->
 
 [workflow-state:planning-ultra]
-Load the `trellis-brainstorm` skill and iterate on prd.md with the user.
-**Ultracode is on — research fans out**: when a topic has independent sub-questions, dispatch MULTIPLE `trellis-research` sub-agents in parallel (one per angle) via the Workflow tool instead of a single serial pass. Each dispatch prompt MUST still start with `Active task: <task path from \`task.py current\`>` so each agent resolves its own `{task_dir}/research/` to write into. See the "Trellis × Ultracode" section for the fan-out protocol. (If the Workflow tool is unavailable, fall back to several sequential `trellis-research` dispatches.)
-Phase 1.3 (required, once): before `task.py start`, you MUST curate `implement.jsonl` and `check.jsonl` — list the spec / research files sub-agents need so they get the right context injected. Fan-out does not change this: curate the jsonl AFTER the parallel research lands, folding in every `{task_dir}/research/*.md` worth injecting. You may skip only if the jsonl already has agent-curated entries (the seed `_example` row alone doesn't count).
-Then run `task.py start <task-dir>` to flip status to in_progress.
+Iterate on prd.md with the user. Ultracode is on: when research splits into independent angles, fan out parallel `trellis-research` agents via the Workflow tool, each dispatch prompt starting with `Active task: <task path from \`task.py current\`>`; trivial planning turns need no fan-out.
+Phase 1.3 (only if Phase 2 will dispatch sub-agents): curate `implement.jsonl` / `check.jsonl` after the parallel research lands. Working inline? Skip it.
+When the prd is settled, run `task.py start <task-dir>`.
 [/workflow-state:planning-ultra]
 
 ### Phase 2: Execute
@@ -223,13 +221,10 @@ Then run `task.py start <task-dir>` to flip status to in_progress.
      commit, including Phase 3.3 spec update and Phase 3.4 commit. -->
 
 [workflow-state:in_progress]
-**Tools**: `trellis-implement` / `trellis-research` are sub-agent types only (Task/Agent tool, NOT Skill — there is no skill by these names). `trellis-update-spec` is a skill. `trellis-check` exists as both; prefer the Agent form when verifying after code changes.
-**Flow**: trellis-implement → trellis-check → trellis-update-spec → commit (Phase 3.4) → `/trellis:finish-work`.
-**Main-session default (no override)**: dispatch the `trellis-implement` / `trellis-check` sub-agents — the main agent does NOT edit code by default. Phase 3.4 commit (required, once): after trellis-update-spec, or whenever implementation is verifiably complete, the main agent **drives the commit** — state the commit plan in user-facing text, then run `git commit` — BEFORE suggesting `/trellis:finish-work`. `/finish-work` refuses to run on a dirty working tree (paths outside `.trellis/workspace/` and `.trellis/tasks/`).
-**Sub-agent self-exemption**: if you are already running as `trellis-implement`, implement directly from the loaded task context and do NOT spawn another `trellis-implement`; if you are already running as `trellis-check`, review/fix directly and do NOT spawn another `trellis-check`. The default dispatch rule applies to the main session only.
-**Sub-agent dispatch protocol (all platforms, all sub-agents)**: When you spawn `trellis-implement` / `trellis-check` / `trellis-research`, your dispatch prompt **MUST** start with one line: `Active task: <task path from \`task.py current\`>`. No exceptions. On class-2 platforms (codex / copilot / gemini / qoder) the sub-agent depends on this line because there is no hook to inject task context. On class-1 platforms (claude / cursor / opencode / kiro / codebuddy / droid) the line is normally redundant — the hook injects context directly — but it serves as a critical fallback when the hook fails (Windows + Claude Code PreToolUse silent skip, `--continue` resume, fork distribution, hooks disabled, etc.). For `trellis-research`, the line tells the sub-agent which `{task_dir}/research/` to write into.
-**Inline override** (per-turn only, escape hatch for sub-agent dispatch): the user's CURRENT message MUST explicitly contain one of: "do it inline" / "no sub-agent" / "你直接改" / "别派 sub-agent" / "main session 写就行" / "不用 sub-agent". **Without seeing one of these phrases you must NOT inline on your own**; do not invent an override the user never said.
-**Ultracode**: if this turn shows an "Ultracode is on" system-reminder (single-turn ultracode without `ultracode.enabled` in config), switch to fan-out per the "Trellis × Ultracode" section — check fans out across review dimensions via the Workflow tool, implement stays single unless decomposable, and the Phase 3.4 commit stays main-driven. This overrides the single-dispatch default above for this turn only.
+Implement in the main session by default — you hold the full conversation context. Read `{task_dir}/prd.md` + `research/` and the relevant `.trellis/spec/` guides before coding; run lint / type-check / tests before reporting done.
+Sub-agents (`trellis-implement` / `trellis-check` / `trellis-research` via the Task/Agent tool; `trellis-check` and `trellis-update-spec` also exist as skills) are optional tools for parallelizable or context-heavy chunks — not a required pipeline. **Sub-agent dispatch protocol (all platforms, all sub-agents)**: the dispatch prompt MUST start with `Active task: <task path from \`task.py current\`>` — for `trellis-research` this resolves which `{task_dir}/research/` to write into. Sub-agents never run git commit/push/merge; if you ARE one, work directly — don't spawn another.
+Then commit (Phase 3.4): the main session states the commit plan, lists unrecognized dirty files for the user to include/exclude (never silently commit them), runs `git commit` — no `--amend`, no push. Wrap up with `/trellis:finish-work` (it refuses to run on a dirty working tree).
+**Ultracode**: if this turn shows an "Ultracode is on" system-reminder, verification may fan out per the "Trellis × Ultracode" section; the commit stays main-driven.
 [/workflow-state:in_progress]
 
 <!-- Per-turn breadcrumb: shown while status='in_progress' when
@@ -238,9 +233,8 @@ Then run `task.py start <task-dir>` to flip status to in_progress.
      instead of dispatching sub-agents. -->
 
 [workflow-state:in_progress-inline]
-**Flow** (inline mode): main session loads `trellis-before-dev` → main session edits code → main session loads `trellis-check` → run lint / type-check / tests → fix → `trellis-update-spec` → commit (Phase 3.4) → `/trellis:finish-work`.
-**Main-session default (inline dispatch_mode)**: the main agent edits code directly. Do NOT dispatch `trellis-implement` / `trellis-check` sub-agents. Load the `trellis-before-dev` skill before writing code; load the `trellis-check` skill before reporting completion.
-Phase 3.4 commit (required, once): after `trellis-update-spec`, or whenever implementation is verifiably complete, the main agent **drives the commit** — state the commit plan in user-facing text, then run `git commit` — BEFORE suggesting `/trellis:finish-work`. `/finish-work` refuses to run on a dirty working tree (paths outside `.trellis/workspace/` and `.trellis/tasks/`).
+Main session edits code directly (inline mode — no trellis-implement / trellis-check sub-agents). Read `{task_dir}/prd.md` + `research/` and relevant `.trellis/spec/` guides before coding; lint / type-check / tests before reporting done.
+Then commit (Phase 3.4): state the commit plan, list unrecognized dirty files for the user to include/exclude, run `git commit` — no `--amend`, no push. Wrap up with `/trellis:finish-work` (it refuses to run on a dirty working tree).
 [/workflow-state:in_progress-inline]
 
 <!-- Per-turn breadcrumb: shown while status='in_progress' when ultracode is on
@@ -252,16 +246,10 @@ Phase 3.4 commit (required, once): after `trellis-update-spec`, or whenever impl
      resolve_breadcrumb_key). -->
 
 [workflow-state:in_progress-ultra]
-**Tools**: `trellis-implement` / `trellis-research` are sub-agent types only — dispatch them via the Task/Agent tool OR a Workflow `agent()` call (NOT Skill). `trellis-update-spec` is a skill. `trellis-check` exists as both; prefer the Agent / Workflow form when verifying after code changes.
-**Flow**: implement → check → trellis-update-spec → commit (Phase 3.4) → `/trellis:finish-work`.
-**Sub-agent self-exemption**: if you are already running as `trellis-implement` / `trellis-check` (a Task/Agent or Workflow `agent()` worker), implement or review/fix directly and do NOT spawn or fan out another Trellis sub-agent. The check fan-out and implement dispatch below are the main session's default only.
-**Trivial turn — answer directly, no fan-out**: if this turn is pure Q&A / status check / a one-line clarification with no code change, just answer at full reasoning depth — do NOT spin up a check pipeline or dispatch sub-agents. Fan-out is for real implement / verify work; max effort still applies to your own reasoning either way.
-**Ultracode is on — check fans out (main-session default)**: instead of one `trellis-check` sub-agent, drive a Workflow pipeline that dispatches MULTIPLE `trellis-check` agents in parallel — one per review dimension (spec compliance / cross-layer data flow / security & resource safety / adversarial edge-case verification) — then the main session reconciles their findings and decides what to fix. See the "Trellis × Ultracode" section for the check pipeline template. If the Workflow tool is unavailable, fall back to several sequential `trellis-check` dispatches.
-**Implement stays single by default**: dispatch ONE `trellis-implement` sub-agent as usual. Only when the prd decomposes into independent, non-overlapping units may you fan out implement across a Workflow pipeline with per-unit worktree isolation (experimental — requires the task dir already committed; see the Trellis × Ultracode section).
-**Workflow agent context (no hook injection)**: a Workflow `agent()` call does NOT trigger the context-injection hook, so there is no `<!-- trellis-hook-injected -->` marker — each agent self-loads prd + jsonl spec via its "Trellis Context Loading Protocol". Every dispatch prompt MUST start with `Active task: <task path from \`task.py current\`>`, passed RELATIVE to repo root. **Check fan-out runs at repo root, NOT in a worktree** so the agent's cwd resolves the repo-root-relative jsonl paths.
-**Workflow agents NEVER commit**: `trellis-implement` / `trellis-check` are forbidden from `git commit` / `push` / `merge` — fan-out does not relax this.
-**Phase 3.4 commit (required, once)**: after the fan-out check reconciles green and `trellis-update-spec` runs, the MAIN session — not any Workflow agent — **drives the commit**: state the commit plan in user-facing text, then run `git commit`, BEFORE suggesting `/trellis:finish-work`. If implement fan-out used worktrees, merge those worktree branches back into the task branch FIRST so the main working tree is clean. `/finish-work` refuses to run on a dirty working tree (paths outside `.trellis/workspace/` and `.trellis/tasks/`).
-**Inline override** (per-turn only): if the user's CURRENT message contains "do it inline" / "no sub-agent" / "你直接改" / "别派 sub-agent" / "main session 写就行" / "不用 sub-agent", drop fan-out and edit directly this turn.
+**Trivial turn — answer directly, no fan-out**: pure Q&A / status checks / one-line fixes get a direct answer at full reasoning depth; fan-out is for substantive implement / verify work.
+Ultracode is on: for real verification, fan out `trellis-check` agents via the Workflow tool — one per review dimension (see the "Trellis × Ultracode" section for the pipeline template) — and reconcile findings in the main session. Implement stays single by default; fan out `trellis-implement` only when the prd splits into independent, non-overlapping units (worktree isolation, experimental). Every dispatch prompt starts with `Active task: <task path from \`task.py current\`>`, repo-root relative; Workflow agents self-load prd + jsonl (no hook injection), and check fan-out runs at repo root, not in a worktree. Workflow agents never run `git commit` / `push` / `merge`.
+**Sub-agent self-exemption**: if you are already a trellis-implement / trellis-check worker, do the work directly — no further fan-out.
+After checks reconcile green, the MAIN session drives the commit (Phase 3.4) — commit plan in user-facing text, unrecognized dirty files confirmed with the user, `git commit`, no `--amend`, no push — then `/trellis:finish-work`. If implement fan-out used worktrees, merge them back into the task branch first.
 [/workflow-state:in_progress-ultra]
 
 ### Phase 3: Finish
@@ -294,9 +282,9 @@ If you reach this state with uncommitted code, return to Phase 3.4 first — `/f
 
 ### Skill Routing
 
-When a user request matches one of these intents, load the corresponding skill (or dispatch the corresponding sub-agent) first — do not skip skills.
+These are the default routes when a request matches an intent; deviate when you have a concrete reason.
 
-[Claude Code, Cursor, OpenCode, codex-sub-agent, Kiro, Gemini, Qoder, CodeBuddy, Copilot, Droid, Pi]
+[Cursor, OpenCode, codex-sub-agent, Kiro, Gemini, Qoder, CodeBuddy, Copilot, Droid, Pi]
 
 | User intent | Route |
 |---|---|
@@ -308,9 +296,9 @@ When a user request matches one of these intents, load the corresponding skill (
 
 **Why `trellis-before-dev` is NOT in this table:** you are not the one writing code — the `trellis-implement` sub-agent is. Sub-agent platforms get spec context via `implement.jsonl` injection / prelude, not via the main thread loading `trellis-before-dev`.
 
-[/Claude Code, Cursor, OpenCode, codex-sub-agent, Kiro, Gemini, Qoder, CodeBuddy, Copilot, Droid, Pi]
+[/Cursor, OpenCode, codex-sub-agent, Kiro, Gemini, Qoder, CodeBuddy, Copilot, Droid, Pi]
 
-[codex-inline, Kilo, Antigravity, Windsurf]
+[Claude Code, codex-inline, Kilo, Antigravity, Windsurf]
 
 | User intent | Skill |
 |---|---|
@@ -320,31 +308,7 @@ When a user request matches one of these intents, load the corresponding skill (
 | Stuck / fixed same bug several times | `trellis-break-loop` |
 | Spec needs update | `trellis-update-spec` |
 
-[/codex-inline, Kilo, Antigravity, Windsurf]
-
-### DO NOT skip skills
-
-[Claude Code, Cursor, OpenCode, codex-sub-agent, Kiro, Gemini, Qoder, CodeBuddy, Copilot, Droid, Pi]
-
-| What you're thinking | Why it's wrong |
-|---|---|
-| "This is simple, I'll just code it in the main thread" | Dispatching `trellis-implement` is the cheap path; skipping it tempts you to write code in the main thread and lose spec context — sub-agents get `implement.jsonl` injected, you don't |
-| "I already thought it through in plan mode" | Plan-mode output lives in memory — sub-agents can't see it; must be persisted to prd.md |
-| "I already know the spec" | The spec may have been updated since you last read it; the sub-agent gets the fresh copy, you may not |
-| "Code first, check later" | `trellis-check` surfaces issues you won't notice yourself; earlier is cheaper |
-
-[/Claude Code, Cursor, OpenCode, codex-sub-agent, Kiro, Gemini, Qoder, CodeBuddy, Copilot, Droid, Pi]
-
-[codex-inline, Kilo, Antigravity, Windsurf]
-
-| What you're thinking | Why it's wrong |
-|---|---|
-| "This is simple, just code it" | Simple tasks often grow complex; `trellis-before-dev` takes under a minute and loads the spec context you'll need |
-| "I already thought it through in plan mode" | Plan-mode output lives in memory — must be persisted to prd.md before code |
-| "I already know the spec" | The spec may have been updated since you last read it; read again |
-| "Code first, check later" | `trellis-check` surfaces issues you won't notice yourself; earlier is cheaper |
-
-[/codex-inline, Kilo, Antigravity, Windsurf]
+[/Claude Code, codex-inline, Kilo, Antigravity, Windsurf]
 
 ### Loading Step Detail
 
@@ -393,7 +357,7 @@ Return to this step whenever requirements change and revise `prd.md`.
 
 Research can happen at any time during requirement exploration. It isn't limited to local code — you can use any available tool (MCP servers, skills, web search, etc.) to look up external information, including third-party library docs, industry practices, API references, etc.
 
-[Claude Code, Cursor, OpenCode, codex-sub-agent, Kiro, Gemini, Qoder, CodeBuddy, Copilot, Droid, Pi]
+[Cursor, OpenCode, codex-sub-agent, Kiro, Gemini, Qoder, CodeBuddy, Copilot, Droid, Pi]
 
 Spawn the research sub-agent:
 
@@ -401,13 +365,13 @@ Spawn the research sub-agent:
 - **Task description**: Research <specific question>
 - **Key requirement**: Research output MUST be persisted to `{TASK_DIR}/research/`
 
-[/Claude Code, Cursor, OpenCode, codex-sub-agent, Kiro, Gemini, Qoder, CodeBuddy, Copilot, Droid, Pi]
+[/Cursor, OpenCode, codex-sub-agent, Kiro, Gemini, Qoder, CodeBuddy, Copilot, Droid, Pi]
 
-[codex-inline, Kilo, Antigravity, Windsurf]
+[Claude Code, codex-inline, Kilo, Antigravity, Windsurf]
 
 Do the research in the main session directly and write findings into `{TASK_DIR}/research/`. (For `codex-inline` this avoids the `fork_turns="none"` isolation that prevents `trellis-research` sub-agents from resolving the active task path.)
 
-[/codex-inline, Kilo, Antigravity, Windsurf]
+[/Claude Code, codex-inline, Kilo, Antigravity, Windsurf]
 
 **Research artifact conventions**:
 - One file per research topic (e.g. `research/auth-library-comparison.md`)
@@ -418,9 +382,9 @@ Brainstorm and research can interleave freely — pause to research a technical 
 
 **Key principle**: Research output must be written to files, not left only in the chat. Conversations get compacted; files don't.
 
-#### 1.3 Configure context `[required · once]`
+#### 1.3 Configure context `[sub-agent dispatch only · once]`
 
-[Claude Code, Cursor, OpenCode, codex-sub-agent, Kiro, Gemini, Qoder, CodeBuddy, Copilot, Droid, Pi]
+[Cursor, OpenCode, codex-sub-agent, Kiro, Gemini, Qoder, CodeBuddy, Copilot, Droid, Pi]
 
 Curate `implement.jsonl` and `check.jsonl` so the Phase 2 sub-agents get the right spec context. These files were seeded on `task create` with a single self-describing `_example` line; your job here is to fill in real entries.
 
@@ -461,13 +425,13 @@ Delete the seed `_example` line once real entries exist (optional — it's skipp
 
 Skip when: `implement.jsonl` has agent-curated entries (the seed row alone doesn't count).
 
-[/Claude Code, Cursor, OpenCode, codex-sub-agent, Kiro, Gemini, Qoder, CodeBuddy, Copilot, Droid, Pi]
+[/Cursor, OpenCode, codex-sub-agent, Kiro, Gemini, Qoder, CodeBuddy, Copilot, Droid, Pi]
 
-[codex-inline, Kilo, Antigravity, Windsurf]
+[Claude Code, codex-inline, Kilo, Antigravity, Windsurf]
 
 Skip this step. Context is loaded directly by the `trellis-before-dev` skill in Phase 2.
 
-[/codex-inline, Kilo, Antigravity, Windsurf]
+[/Claude Code, codex-inline, Kilo, Antigravity, Windsurf]
 
 #### 1.4 Activate task `[required · once]`
 
@@ -491,11 +455,11 @@ If `task.py start` errors with a session-identity message (no context key from h
 | `research/` has artifacts (complex tasks) | recommended |
 | `info.md` technical design (complex tasks) | optional |
 
-[Claude Code, Cursor, OpenCode, codex-sub-agent, Kiro, Gemini, Qoder, CodeBuddy, Copilot, Droid, Pi]
+[Cursor, OpenCode, codex-sub-agent, Kiro, Gemini, Qoder, CodeBuddy, Copilot, Droid, Pi]
 
 | `implement.jsonl` has agent-curated entries (not just the seed row) | ✅ |
 
-[/Claude Code, Cursor, OpenCode, codex-sub-agent, Kiro, Gemini, Qoder, CodeBuddy, Copilot, Droid, Pi]
+[/Cursor, OpenCode, codex-sub-agent, Kiro, Gemini, Qoder, CodeBuddy, Copilot, Droid, Pi]
 
 ---
 
@@ -505,7 +469,7 @@ Goal: turn the prd into code that passes quality checks.
 
 #### 2.1 Implement `[required · repeatable]`
 
-[Claude Code, Cursor, OpenCode, Gemini, Qoder, CodeBuddy, Copilot, Droid, Pi]
+[Cursor, OpenCode, Gemini, Qoder, CodeBuddy, Copilot, Droid, Pi]
 
 Spawn the implement sub-agent:
 
@@ -517,7 +481,7 @@ The platform hook/plugin auto-handles:
 - Reads `implement.jsonl` and injects the referenced spec files into the agent prompt
 - Injects prd.md content
 
-[/Claude Code, Cursor, OpenCode, Gemini, Qoder, CodeBuddy, Copilot, Droid, Pi]
+[/Cursor, OpenCode, Gemini, Qoder, CodeBuddy, Copilot, Droid, Pi]
 
 [codex-sub-agent]
 
@@ -547,7 +511,7 @@ The platform prelude auto-handles the context load requirement:
 
 [/Kiro]
 
-[codex-inline, Kilo, Antigravity, Windsurf]
+[Claude Code, codex-inline, Kilo, Antigravity, Windsurf]
 
 1. Load the `trellis-before-dev` skill to read project guidelines
 2. Read `{TASK_DIR}/prd.md` for requirements
@@ -555,11 +519,11 @@ The platform prelude auto-handles the context load requirement:
 4. Implement the code per requirements
 5. Run project lint and type-check
 
-[/codex-inline, Kilo, Antigravity, Windsurf]
+[/Claude Code, codex-inline, Kilo, Antigravity, Windsurf]
 
 #### 2.2 Quality check `[required · repeatable]`
 
-[Claude Code, Cursor, OpenCode, codex-sub-agent, Kiro, Gemini, Qoder, CodeBuddy, Copilot, Droid, Pi]
+[Cursor, OpenCode, codex-sub-agent, Kiro, Gemini, Qoder, CodeBuddy, Copilot, Droid, Pi]
 
 Spawn the check sub-agent:
 
@@ -572,9 +536,9 @@ The check agent's job:
 - Auto-fix issues it finds
 - Run lint and typecheck to verify
 
-[/Claude Code, Cursor, OpenCode, codex-sub-agent, Kiro, Gemini, Qoder, CodeBuddy, Copilot, Droid, Pi]
+[/Cursor, OpenCode, codex-sub-agent, Kiro, Gemini, Qoder, CodeBuddy, Copilot, Droid, Pi]
 
-[codex-inline, Kilo, Antigravity, Windsurf]
+[Claude Code, codex-inline, Kilo, Antigravity, Windsurf]
 
 Load the `trellis-check` skill and verify the code per its guidance:
 - Spec compliance
@@ -583,7 +547,7 @@ Load the `trellis-check` skill and verify the code per its guidance:
 
 If issues are found → fix → re-check, until green.
 
-[/codex-inline, Kilo, Antigravity, Windsurf]
+[/Claude Code, codex-inline, Kilo, Antigravity, Windsurf]
 
 #### 2.3 Rollback `[on demand]`
 
@@ -615,64 +579,17 @@ If this task involved repeated debugging (the same issue was fixed multiple time
 
 The goal is to capture debugging lessons so the same class of issue doesn't recur.
 
-#### 3.3 Spec update `[required · once]`
+#### 3.3 Spec update `[when new knowledge surfaced]`
 
-Load the `trellis-update-spec` skill and review whether this task produced new knowledge worth recording:
-- Newly discovered patterns or conventions
-- Pitfalls you hit
-- New technical decisions
-
-Update the docs under `.trellis/spec/` accordingly. Even if the conclusion is "nothing to update", walk through the judgment.
+If this task produced knowledge worth keeping — a new pattern or convention, a pitfall you hit, a technical decision — capture it under `.trellis/spec/` (the `trellis-update-spec` skill has the format). Nothing new? Move on; no judgment ceremony needed.
 
 #### 3.4 Commit changes `[required · once]`
 
-The AI drives a batched commit of this task's code changes so `/finish-work` can run cleanly afterwards. Goal: produce work commits FIRST, then bookkeeping (archive + journal) commits land after — never interleaved.
+The main session drives the commit so `/finish-work` can run cleanly afterwards (work commits first, bookkeeping commits after — never interleaved).
 
-**Step-by-step**:
-
-1. **Inspect dirty state**:
-   ```bash
-   git status --porcelain
-   ```
-   Snapshot every dirty path. If the working tree is clean, skip to 3.5.
-
-2. **Learn commit style** from recent history (so drafted messages blend in):
-   ```bash
-   git log --oneline -5
-   ```
-   Note the prefix convention (`feat:` / `fix:` / `chore:` / `docs:` ...), language (中文/English), and length style.
-
-3. **Classify dirty files into two groups**:
-   - **AI-edited this session** — files you wrote/edited via Edit/Write/Bash tool calls in this session. You know what changed and why.
-   - **Unrecognized** — dirty files you did NOT touch this session (could be the user's manual edits, leftover WIP from a previous session, or unrelated work). Do NOT silently include these.
-
-4. **Draft a commit plan**. Group AI-edited files into logical commits (1 commit per coherent change unit, not 1 commit per file). Each entry: `<commit message>` + file list. List unrecognized files separately at the bottom.
-
-5. **Present the plan once, ask for one-shot confirmation**. Format:
-   ```
-   Proposed commits (in order):
-     1. <message>
-        - <file>
-        - <file>
-     2. <message>
-        - <file>
-
-   Unrecognized dirty files (NOT in any commit — confirm include/exclude):
-     - <file>
-     - <file>
-
-   Reply 'ok' / '行' to execute. Reply with edits, or '我自己来' / 'manual' to abort.
-   ```
-
-6. **On confirmation**: run `git add <files>` + `git commit -m "<msg>"` for each batch in order. Do not amend. Do not push.
-
-7. **On rejection** (user replies "不行" / "我自己来" / "manual" / any pushback on the plan): stop. Do not attempt a second plan. The user will commit by hand; you skip ahead to 3.5 once they confirm.
-
-**Rules**:
-- No `git commit --amend` anywhere — three-stage three-commit flow (work commits → archive commit → journal commit).
-- Never push to remote in this step.
-- If the user wants different message wording but accepts the file grouping, edit the message and re-confirm once — but if they reject the grouping, exit to manual mode.
-- The batched plan is one prompt; do not prompt per commit.
+- `git status --porcelain` + `git log --oneline -5`: see what's dirty, match the repo's commit style. Clean tree → skip to 3.5.
+- Group the files you edited this session into logical commits and state the plan in user-facing text. Dirty files you did NOT touch this session are listed for the user to include/exclude — **never silently committed**.
+- Hard rules: no `git commit --amend`, never push in this step. If the user rejects the plan, let them commit by hand and continue to 3.5.
 
 #### 3.5 Wrap-up reminder
 

@@ -33,6 +33,28 @@ import os
 import re
 import sys
 from pathlib import Path
+
+# Force UTF-8 on stdin/stdout/stderr on Windows. Default codepage there is
+# cp936 / cp1252 / etc. — non-ASCII content (Chinese task names, prd snippets)
+# both in stdin (hook payload from host CLI) and stdout (our emitted blocks)
+# raises UnicodeDecodeError / UnicodeEncodeError. Equivalent to `python -X utf8`
+# but applied per-stream so we don't depend on host CLI's command wiring.
+if sys.platform.startswith("win"):
+    import io as _io
+    for _stream_name in ("stdin", "stdout", "stderr"):
+        _stream = getattr(sys, _stream_name, None)
+        if _stream is None:
+            continue
+        if hasattr(_stream, "reconfigure"):
+            try:
+                _stream.reconfigure(encoding="utf-8", errors="replace")  # type: ignore[union-attr]
+            except Exception:
+                pass
+        elif hasattr(_stream, "detach"):
+            try:
+                setattr(sys, _stream_name, _io.TextIOWrapper(_stream.detach(), encoding="utf-8", errors="replace"))
+            except Exception:
+                pass
 from typing import Optional
 
 
@@ -227,20 +249,102 @@ def _read_trellis_config(root: Path) -> dict:
         return {}
 
 
+def _codex_mode_banner(config: dict) -> str:
+    """Emit a `<codex-mode>` banner for the additionalContext payload.
+
+    Reads `codex.dispatch_mode` from .trellis/config.yaml; defaults to
+    `inline` when missing or invalid because Codex sub-agents run with
+    `fork_turns="none"` isolation and can't inherit the parent session's
+    task context. The banner makes the active mode explicit to Codex AI
+    per turn, complementing the workflow-state body which is per-status.
+    Mode tells AI which dispatch protocol to follow; workflow-state tells
+    AI what step it's at.
+    """
+    mode = "inline"
+    if isinstance(config, dict):
+        codex_cfg = config.get("codex")
+        if isinstance(codex_cfg, dict):
+            cfg_mode = codex_cfg.get("dispatch_mode")
+            if cfg_mode in ("inline", "sub-agent"):
+                mode = cfg_mode
+    return f"<codex-mode>{mode}</codex-mode>"
+
+
+def _ultracode_enabled(config: dict) -> bool:
+    """True when .trellis/config.yaml has ``ultracode.enabled`` set truthy.
+
+    Drives the config-persistent channel of ultracode fan-out: when on,
+    ``resolve_breadcrumb_key`` returns the ``{status}-ultra`` breadcrumb variant
+    for class-1 platforms (``ULTRACODE_PLATFORMS``). Codex and non-class-1
+    platforms are excluded by the caller — fan-out needs parallel sub-agents,
+    which Codex's ``fork_turns="none"`` isolation forbids.
+
+    Accepts bool ``True`` or the usual truthy strings/ints
+    (``true`` / ``yes`` / ``on`` / ``1``), matching the case-insensitive
+    convention used elsewhere in config.yaml.
+    """
+    if not isinstance(config, dict):
+        return False
+    uc = config.get("ultracode")
+    if not isinstance(uc, dict):
+        return False
+    val = uc.get("enabled")
+    if isinstance(val, bool):
+        return val
+    if isinstance(val, (int, float)):
+        return val != 0
+    if isinstance(val, str):
+        return val.strip().lower() in ("true", "yes", "on", "1")
+    return False
+
+
+# Class-1 platforms (workflow.md Phase 2 platform-class note): the set that
+# supports Workflow fan-out, so the only platforms that receive `{status}-ultra`
+# breadcrumbs. Codex is excluded separately (handled first in
+# resolve_breadcrumb_key); every other non-class-1 / undetected platform gets the
+# base breadcrumb. "opencode" is listed for documentation — the OpenCode plugin
+# resolves its own key in inject-workflow-state.js and never calls this function.
+ULTRACODE_PLATFORMS = frozenset(
+    {"claude", "cursor", "opencode", "kiro", "codebuddy", "droid"}
+)
+
+
 def resolve_breadcrumb_key(
     status: str, platform: str | None, config: dict
 ) -> str:
-    """Pick the breadcrumb tag key based on Codex dispatch_mode.
+    """Pick the breadcrumb tag key based on platform / dispatch mode.
 
-    Codex users may opt into ``codex.dispatch_mode: inline`` to have the main
-    agent edit code directly. When the opt-in is set, route to the parallel
-    ``<status>-inline`` tag block so the breadcrumb body matches the inline
-    workflow. Other platforms / modes return the plain status unchanged.
+    Two orthogonal dispatch dimensions, resolved in priority order:
+
+    1. **Codex** (checked first, returns immediately): defaults to ``inline``
+       because sub-agents run with ``fork_turns="none"`` isolation and can't
+       inherit the parent session's task context. ``codex.dispatch_mode:
+       sub-agent`` opts into the ``<status>-inline`` → ``<status>`` flip. Codex
+       NEVER enters the ultracode branch — fan-out is incompatible with its
+       sub-agent isolation, and returning here prevents a ``-inline-ultra``
+       variant explosion.
+
+    2. **Ultracode** (class-1 platforms only): when ``ultracode.enabled`` is set
+       in config.yaml AND the platform is in ``ULTRACODE_PLATFORMS``, return the
+       ``{status}-ultra`` variant so the breadcrumb steers the main agent toward
+       Workflow fan-out (research + check). Non-class-1 / undetected platforms
+       (copilot / gemini / qoder / None) keep the base breadcrumb. Missing
+       ``*-ultra`` tags fall back to the base status via ``build_breadcrumb``,
+       so only planning/in_progress need ultra bodies.
+
+    Plain status otherwise.
     """
-    if platform == "codex" and isinstance(config, dict):
-        codex_cfg = config.get("codex")
-        if isinstance(codex_cfg, dict) and codex_cfg.get("dispatch_mode") == "inline":
-            return f"{status}-inline"
+    if platform == "codex":
+        mode = "inline"
+        if isinstance(config, dict):
+            codex_cfg = config.get("codex")
+            if isinstance(codex_cfg, dict):
+                cfg_mode = codex_cfg.get("dispatch_mode")
+                if cfg_mode in ("inline", "sub-agent"):
+                    mode = cfg_mode
+        return f"{status}-inline" if mode == "inline" else status
+    if _ultracode_enabled(config) and platform in ULTRACODE_PLATFORMS:
+        return f"{status}-ultra"
     return status
 
 
@@ -294,6 +398,17 @@ def main() -> int:
     platform = _detect_platform(data)
     config = _read_trellis_config(root)
     task = get_active_task(root, data)
+    # Refresh this session's last_seen_at (no-op if it has no session file) so the
+    # single-session fallback's staleness gate never ages out a live window.
+    try:
+        from common.active_task import (  # type: ignore[import-not-found]
+            resolve_context_key,
+            touch_session_last_seen,
+        )
+
+        touch_session_last_seen(root, resolve_context_key(data, platform))
+    except Exception:
+        pass
     if task is None:
         # No active task — still emit a breadcrumb nudging AI toward
         # trellis-brainstorm + task.py create when user describes real work.
@@ -311,6 +426,7 @@ def main() -> int:
         parts: list[str] = [CODEX_SUB_AGENT_NOTICE]
         if task is None:
             parts.append(CODEX_NO_TASK_BOOTSTRAP_NOTICE)
+        parts.append(_codex_mode_banner(config))
         parts.append(breadcrumb)
         breadcrumb = "\n\n".join(parts)
 
