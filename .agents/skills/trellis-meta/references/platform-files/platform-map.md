@@ -1,6 +1,6 @@
 # Platform File Map
 
-This page lists common Trellis file locations in a user project by platform. Whether a platform directory exists in an actual project depends on which `trellis init --<platform>` commands the user ran.
+This page lists common Polygon file locations in a user project by platform. Whether a platform directory exists in an actual project depends on which `trellis init --<platform>` commands the user ran.
 
 ## Matrix
 
@@ -23,7 +23,7 @@ This page lists common Trellis file locations in a user project by platform. Whe
 
 ## Capability Groups
 
-### Trellis Sub-Agent Support
+### Polygon Sub-Agent Support
 
 These platforms usually have `trellis-research`, `trellis-implement`, and `trellis-check` files:
 
@@ -49,7 +49,7 @@ These platforms rely more on workflows/skills to guide the main session:
 - Antigravity
 - Windsurf
 
-When changing behavior, inspect workflows and skills first. Do not assume Trellis sub-agents exist.
+When changing behavior, inspect workflows and skills first. Do not assume Polygon sub-agents exist.
 
 ### Shared `.agents/skills/`
 
@@ -61,7 +61,7 @@ Codex writes the shared `.agents/skills/` layer. Some tools that support agentsk
 2. User says "all platforms should do this": synchronize equivalent entry points platform by platform; do not modify only one directory.
 3. User only says "my AI": inspect the configuration directories that actually exist in the project and infer the current AI platform.
 4. User wants project rules: prefer `.trellis/spec/` or a project-local skill.
-5. User wants Trellis behavior: edit `.trellis/workflow.md` plus platform hooks/agents/skills/commands.
+5. User wants Polygon behavior: edit `.trellis/workflow.md` plus platform hooks/agents/skills/commands.
 
 ## When Paths Differ
 

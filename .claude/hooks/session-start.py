@@ -92,7 +92,7 @@ if sys.platform.startswith("win"):
 
 
 def should_skip_injection() -> bool:
-    """Check if any platform's non-interactive flag is set, or if Trellis
+    """Check if any platform's non-interactive flag is set, or if Polygon
     hooks are explicitly disabled via TRELLIS_HOOKS=0 / TRELLIS_DISABLE_HOOKS=1.
     """
     if os.environ.get("TRELLIS_HOOKS") == "0":
@@ -165,7 +165,7 @@ def _resolve_context_key(trellis_dir: Path, input_data: dict) -> str | None:
 
 
 def _persist_context_key_for_bash(context_key: str | None) -> None:
-    """Expose Trellis session identity to later Claude Code Bash commands.
+    """Expose Polygon session identity to later Claude Code Bash commands.
 
     Claude Code SessionStart hooks can append exports to CLAUDE_ENV_FILE; those
     variables are then available to Bash tools in the same conversation. Without
@@ -330,7 +330,7 @@ def _get_task_status(trellis_dir: Path, input_data: dict) -> str:
 
 
 def _load_trellis_config(trellis_dir: Path, input_data: dict) -> tuple:
-    """Load Trellis config for session-start decisions.
+    """Load Polygon config for session-start decisions.
 
     Returns:
         (is_mono, packages_dict, spec_scope, task_pkg, default_pkg)
@@ -542,7 +542,7 @@ def main():
     output = StringIO()
 
     output.write("""<session-context>
-You are starting a new session in a Trellis-managed project.
+You are starting a new session in a Polygon-managed project.
 Read and follow all instructions below carefully.
 </session-context>
 

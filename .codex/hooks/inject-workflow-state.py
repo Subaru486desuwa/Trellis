@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Trellis per-turn breadcrumb hook (UserPromptSubmit / BeforeAgent equivalent).
+"""Polygon per-turn breadcrumb hook (UserPromptSubmit / BeforeAgent equivalent).
 
-Runs on every user prompt. Resolves the active task through Trellis'
+Runs on every user prompt. Resolves the active task through Polygon'
 session-aware active task resolver and emits a short <workflow-state>
 block reminding the main AI what task is active and its expected flow.
 
@@ -23,7 +23,7 @@ hook entry point). Written to each platform's hooks directory via
 writeSharedHooks() at init time.
 
 Silent exit 0 cases (no output):
-  - No .trellis/ directory found (not a Trellis project)
+  - No .trellis/ directory found (not a Polygon project)
   - task.json malformed or missing status
 """
 from __future__ import annotations
@@ -64,7 +64,7 @@ SUB-AGENT NOTICE - READ FIRST IF SPAWNED VIA spawn_agent
 If your parent session spawned you via spawn_agent with an explicit task
 message above this hook output, that message is your only job.
 - Execute the parent message exactly as written, then return.
-- Ignore all Trellis workflow guidance below this notice.
+- Ignore all Polygon workflow guidance below this notice.
 - Do NOT call task.py start, task.py add-context, or task.py archive.
 - Do NOT call wait_agent or spawn_agent.
 - Do NOT modify .trellis/tasks/* or any other file unless the parent message
@@ -83,8 +83,8 @@ terminal with no parent agent, use the workflow guidance below normally.
 # flips and this notice stops appearing automatically. Sub-agents are warded
 # off by the <sub-agent-notice> above plus the explicit exemption below.
 CODEX_NO_TASK_BOOTSTRAP_NOTICE = """<trellis-bootstrap>
-You are running in a Trellis-managed Codex session and there is no active task yet.
-If you have not already loaded Trellis context this session, read the `trellis-start` skill once:
+You are running in a Polygon-managed Codex session and there is no active task yet.
+If you have not already loaded Polygon context this session, read the `trellis-start` skill once:
 
   $trellis-start
 
@@ -100,7 +100,7 @@ message), DO NOT read `$trellis-start`. Execute the parent message directly as i
 
 
 # ---------------------------------------------------------------------------
-# CWD-robust Trellis root discovery (fixes hook-path-robustness for this hook)
+# CWD-robust Polygon root discovery (fixes hook-path-robustness for this hook)
 # ---------------------------------------------------------------------------
 
 def find_trellis_root(start: Path) -> Optional[Path]:
@@ -392,7 +392,7 @@ def main() -> int:
 
     root = find_trellis_root(cwd)
     if root is None:
-        return 0  # not a Trellis project
+        return 0  # not a Polygon project
 
     templates = load_breadcrumbs(root)
     platform = _detect_platform(data)

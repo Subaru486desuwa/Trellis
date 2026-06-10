@@ -1,13 +1,13 @@
 # Platform Files Overview
 
-Trellis connects the same local architecture to different AI tools. `.trellis/` stores the shared runtime; platform directories store adapter files that define how each AI tool enters Trellis.
+Polygon connects the same local architecture to different AI tools. `.trellis/` stores the shared runtime; platform directories store adapter files that define how each AI tool enters Polygon.
 
-When a local AI modifies Trellis, it should distinguish two file categories first:
+When a local AI modifies Polygon, it should distinguish two file categories first:
 
 - **Shared files**: `.trellis/workflow.md`, `.trellis/tasks/`, `.trellis/spec/`, `.trellis/scripts/`.
 - **Platform files**: `.claude/`, `.codex/`, `.cursor/`, `.opencode/`, `.kiro/`, `.gemini/`, `.qoder/`, `.codebuddy/`, `.github/`, `.factory/`, `.pi/`, `.kilocode/`, `.agent/`, `.windsurf/`, and similar directories.
 
-Platform files do not store business state. They let the corresponding AI tool read Trellis state, call Trellis scripts, and load Trellis skills/agents/hooks.
+Platform files do not store business state. They let the corresponding AI tool read Polygon state, call Polygon scripts, and load Polygon skills/agents/hooks.
 
 ## Platform File Categories
 
@@ -23,7 +23,7 @@ Platform files do not store business state. They let the corresponding AI tool r
 
 ### 1. Hook / Extension Driven
 
-These platforms can trigger scripts or plugins on specific events and actively inject Trellis context into AI.
+These platforms can trigger scripts or plugins on specific events and actively inject Polygon context into AI.
 
 Common capabilities:
 
@@ -42,7 +42,7 @@ To change how sub-agents load context, inspect the agent files themselves.
 
 ### 3. Main-Session Workflow
 
-Some platforms do not have Trellis sub-agent or hook capabilities. They rely on workflows/skills/commands to guide the main-session AI to read files, run scripts, and move tasks forward.
+Some platforms do not have Polygon sub-agent or hook capabilities. They rely on workflows/skills/commands to guide the main-session AI to read files, run scripts, and move tasks forward.
 
 To change behavior, inspect platform workflows/skills/commands and `.trellis/workflow.md`.
 

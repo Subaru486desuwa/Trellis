@@ -16,7 +16,7 @@ When the user wants to change AI entry points, auto-trigger rules, or explicit c
 | AI should automatically know a capability | Add or modify a skill. |
 | User wants to trigger manually with a command | Add or modify a command/prompt/workflow. |
 | Team project conventions | Prefer `.trellis/spec/` or a project-local skill. |
-| Change Trellis flow semantics | Synchronize `.trellis/workflow.md`. |
+| Change Polygon flow semantics | Synchronize `.trellis/workflow.md`. |
 
 ## Modify A Skill
 

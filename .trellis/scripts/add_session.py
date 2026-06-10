@@ -325,7 +325,7 @@ def update_index(
 # =============================================================================
 
 def _auto_commit_workspace(repo_root: Path) -> None:
-    """Stage Trellis-owned workspace + task paths and commit.
+    """Stage Polygon-owned workspace + task paths and commit.
 
     Path scope is restricted to specific products (journal files, index.md,
     active task dirs, the archive subtree). We never `git add` the whole
