@@ -156,7 +156,7 @@ export const AI_TOOLS: Record<AITool, AIToolConfig> = {
     templateDirs: ["common", "cursor"],
     configDir: ".cursor",
     cliFlag: "cursor",
-    defaultChecked: true,
+    defaultChecked: false,
     hasPythonHooks: true,
     templateContext: {
       cmdRefPrefix: "/trellis-",
@@ -189,7 +189,7 @@ export const AI_TOOLS: Record<AITool, AIToolConfig> = {
     configDir: ".codex",
     supportsAgentSkills: true,
     cliFlag: "codex",
-    defaultChecked: false,
+    defaultChecked: true,
     hasPythonHooks: true,
     templateContext: {
       cmdRefPrefix: "$",

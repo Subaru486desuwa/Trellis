@@ -320,8 +320,8 @@ def cmd_create(args: argparse.Namespace) -> int:
     print("  1. Create prd.md with requirements", file=sys.stderr)
     if seeded_jsonl:
         print(
-            "  2. Curate implement.jsonl / check.jsonl (spec + research files only — "
-            "see .trellis/workflow.md Phase 1.3)",
+            "  2. (only if dispatching sub-agents) curate implement.jsonl / "
+            "check.jsonl — see .trellis/workflow.md Phase 1.3",
             file=sys.stderr,
         )
         print("  3. Run: python3 task.py start <dir>", file=sys.stderr)

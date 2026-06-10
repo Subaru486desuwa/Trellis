@@ -3414,61 +3414,6 @@ print(len(entries))
     expect(output).not.toContain("before-dev takes under a minute");
   });
 
-  it("[workflow-v2] step 2.1 for codex (sub-agent mode) describes self-loaded agent context, not hook injection", () => {
-    writeTrellisScripts();
-    writeProjectFile(path.join(".trellis", ".developer"), "name=test\n");
-    writeProjectFile(
-      path.join(".trellis", "workflow.md"),
-      templateWorkflowMd(),
-    );
-    // Codex defaults to inline since 0.5.9; opt into sub-agent dispatch
-    // explicitly so the [codex-sub-agent] block surfaces.
-    writeConfigYaml("codex:\n  dispatch_mode: sub-agent\n");
-
-    const contextScript = path.join(
-      tmpDir,
-      ".trellis",
-      "scripts",
-      "get_context.py",
-    );
-    const output = execSync(
-      `${pythonCmd} ${JSON.stringify(contextScript)} --mode phase --step 2.1 --platform codex`,
-      { cwd: tmpDir, encoding: "utf-8" },
-    );
-
-    expect(output).toContain("The Codex sub-agent definition auto-handles");
-    expect(output).toContain(
-      "Resolves the active task with `task.py current --source`",
-    );
-    expect(output).not.toContain("The platform hook/plugin auto-handles");
-    expect(output).not.toContain("Load the `trellis-before-dev` skill");
-  });
-
-  it("[pi] step 2.1 describes extension-backed sub-agent context path", () => {
-    writeTrellisScripts();
-    writeProjectFile(path.join(".trellis", ".developer"), "name=test\n");
-    writeProjectFile(
-      path.join(".trellis", "workflow.md"),
-      templateWorkflowMd(),
-    );
-
-    const contextScript = path.join(
-      tmpDir,
-      ".trellis",
-      "scripts",
-      "get_context.py",
-    );
-    const output = execSync(
-      `${pythonCmd} ${JSON.stringify(contextScript)} --mode phase --step 2.1 --platform pi`,
-      { cwd: tmpDir, encoding: "utf-8" },
-    );
-
-    expect(output).toContain("The platform hook/plugin auto-handles");
-    expect(output).toContain("Reads `implement.jsonl`");
-    expect(output).not.toContain("The Codex sub-agent definition auto-handles");
-    expect(output).not.toContain("Load the `trellis-before-dev` skill");
-  });
-
   it("[workflow-v2] --mode phase --platform kilo keeps trellis-before-dev routing (agent-less path)", () => {
     // Symmetric to the codex filter test: agent-less platforms MUST still
     // see `trellis-before-dev` because they write code in the main session.
@@ -3812,12 +3757,11 @@ print(len(entries))
       { cwd: tmpDir, encoding: "utf-8" },
     );
 
-    // The [Kilo, Antigravity, Windsurf] inline block content surfaces:
-    // it tells the main session to load trellis-before-dev directly.
+    // Slim tag-free workflow.md: every platform (codex included) gets the
+    // same generic step 2.1 — main-session implementation by default, with
+    // trellis-before-dev as the spec-context loader.
     expect(output).toContain("trellis-before-dev");
-    expect(output).toContain("Read `{TASK_DIR}/prd.md`");
-    // The Codex sub-agent dispatch text must NOT surface in inline mode.
-    expect(output).not.toMatch(/Active task: <task path>/);
+    expect(output).toContain("implement directly in the main session");
   });
 
   it("[issue-codex-dispatch-mode] resolve_breadcrumb_key picks status-inline only for codex+inline", () => {

@@ -110,19 +110,12 @@ describe("trellis template constants", () => {
     expect(block).toContain("main session");
   });
 
-  it("[issue-237] workflow.md Phase 2 dispatch steps require prompt recursion guards", () => {
-    expect(workflowMdTemplate).toContain("**Dispatch prompt guard**");
+  it("[issue-237] workflow.md Phase 2 dispatch step requires a prompt recursion guard", () => {
+    // Slim contract: dispatch is optional, but when it happens the prompt
+    // must carry the Active-task line and forbid nested sub-agent spawns.
+    expect(workflowMdTemplate).toContain("Active task: <task path>");
     expect(workflowMdTemplate).toContain(
-      "already the `trellis-implement` sub-agent",
-    );
-    expect(workflowMdTemplate).toContain(
-      "not spawn another `trellis-implement` / `trellis-check`",
-    );
-    expect(workflowMdTemplate).toContain(
-      "already the `trellis-check` sub-agent",
-    );
-    expect(workflowMdTemplate).toContain(
-      "not spawn another `trellis-check` / `trellis-implement`",
+      "must not spawn further sub-agents",
     );
   });
 

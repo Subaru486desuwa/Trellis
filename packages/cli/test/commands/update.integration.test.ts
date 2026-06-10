@@ -585,8 +585,9 @@ describe("update() integration", () => {
     // auto-updated to the current packaged template.
     expect(readProjectFile(PATHS.WORKFLOW_GUIDE_FILE)).toBe(expectedWorkflow);
     expect(readProjectFile(MANAGED_FILE)).toBe(expectedGetContext);
+    // Slim template: tag-free walkthroughs, breadcrumb variants present
     expect(readProjectFile(PATHS.WORKFLOW_GUIDE_FILE)).toContain(
-      "[Claude Code, codex-inline, Kilo, Antigravity, Windsurf]",
+      "[workflow-state:in_progress-ultra]",
     );
     expect(readProjectFile(PATHS.WORKFLOW_GUIDE_FILE)).not.toContain(
       "[Codex]",
@@ -1202,8 +1203,10 @@ describe("update() integration", () => {
 
     const updated = fs.readFileSync(workflowPath, "utf-8");
     expect(updated).toBe(replacePythonCommandLiterals(workflowMdTemplate));
-    expect(updated).toContain("[codex-sub-agent]");
-    expect(updated).toContain("[Claude Code, codex-inline, Kilo, Antigravity, Windsurf]");
+    // Slim template: platform tag groups are gone entirely; breadcrumb
+    // blocks (including dispatch-mode variants) are the only tagged content.
+    expect(updated).toContain("[workflow-state:planning-ultra]");
+    expect(updated).not.toContain("[codex-sub-agent]");
     expect(updated).not.toContain("[Codex]");
     expect(updated).not.toContain("[Kilo, Antigravity, Windsurf]");
     expect(updated).not.toContain("legacy body");

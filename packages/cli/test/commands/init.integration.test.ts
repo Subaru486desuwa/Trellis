@@ -92,11 +92,11 @@ describe("init() integration", () => {
     expect(fs.existsSync(path.join(tmpDir, PATHS.TASKS))).toBe(true);
     expect(fs.existsSync(path.join(tmpDir, PATHS.SPEC))).toBe(true);
 
-    // Default platforms: cursor + claude
-    expect(fs.existsSync(path.join(tmpDir, ".cursor"))).toBe(true);
+    // Default platforms: claude + codex (slim fork — cursor et al. opt-in only)
+    expect(fs.existsSync(path.join(tmpDir, ".cursor"))).toBe(false);
     expect(fs.existsSync(path.join(tmpDir, ".claude"))).toBe(true);
-    expect(fs.existsSync(path.join(tmpDir, ".codex"))).toBe(false);
-    expect(fs.existsSync(path.join(tmpDir, ".agents", "skills"))).toBe(false);
+    expect(fs.existsSync(path.join(tmpDir, ".codex"))).toBe(true);
+    expect(fs.existsSync(path.join(tmpDir, ".agents", "skills"))).toBe(true);
     expect(fs.existsSync(path.join(tmpDir, ".agent", "workflows"))).toBe(false);
     expect(fs.existsSync(path.join(tmpDir, ".kiro", "skills"))).toBe(false);
     expect(fs.existsSync(path.join(tmpDir, ".gemini"))).toBe(false);
@@ -133,7 +133,7 @@ describe("init() integration", () => {
       fs.existsSync(
         path.join(
           tmpDir,
-          ".cursor",
+          ".agents",
           "skills",
           "trellis-meta",
           "references",
