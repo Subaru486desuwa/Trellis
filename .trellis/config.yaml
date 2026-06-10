@@ -15,6 +15,24 @@ session_commit_message: "chore: record journal"
 max_journal_lines: 2000
 
 #-------------------------------------------------------------------------------
+# Session Auto-Commit
+#-------------------------------------------------------------------------------
+
+# Auto-commit behavior for session journal + task archive operations.
+# - true (default): scripts auto-stage and auto-commit journal / task changes
+#   after add_session.py / task.py archive runs.
+# - false: scripts do not touch git. Files (journal-*.md, task archive moves)
+#   are still written to disk; you decide whether to git add / commit.
+#
+# Use `false` if your project's .gitignore intentionally excludes `.trellis/`
+# and you want session data kept local-only, or if you prefer to review
+# staged changes manually before each commit.
+#
+# Accepts: true / false / yes / no / 1 / 0 / on / off (case-insensitive).
+#
+# session_auto_commit: true
+
+#-------------------------------------------------------------------------------
 # Task Lifecycle Hooks
 #-------------------------------------------------------------------------------
 
@@ -58,14 +76,37 @@ max_journal_lines: 2000
 # Default package used when --package is not specified.
 # default_package: frontend
 
+#-------------------------------------------------------------------------------
+# Codex (dispatch behavior)
+#-------------------------------------------------------------------------------
+# Codex-only knob; other platforms ignore it. Default ("inline") makes the
+# main Codex agent edit code directly because Codex sub-agents run with
+# `fork_turns="none"` isolation and can't inherit the parent session's
+# task context. Set to "sub-agent" to opt into the legacy dispatch model
+# (main agent spawns trellis-implement / trellis-check / trellis-research
+# sub-agents).
+#
+# codex:
+#   dispatch_mode: inline  # or "sub-agent" to dispatch trellis-* sub-agents
 
 #-------------------------------------------------------------------------------
-# Codex (sub-agent dispatch behavior)
+# Ultracode (fan-out dispatch)
 #-------------------------------------------------------------------------------
-# Opt out of "main session must dispatch trellis-implement / trellis-check
-# sub-agents" and let the main agent edit code inline. Codex-only knob;
-# other platforms ignore it. Default ("sub-agent") preserves existing
-# behavior, so nothing changes unless you uncomment the block below.
+# Ultracode = Claude Code's "Workflow" tool: large-scale parallel agent
+# orchestration. class-1 platforms only; codex does NOT support fan-out
+# (sub-agent isolation) and ignores this switch entirely.
 #
-codex:
-  dispatch_mode: inline  # or "inline" to let the main agent edit code directly
+# When enabled, the planning / in_progress breadcrumbs switch to their *-ultra
+# variants: research + check fan out by default (multiple trellis-research /
+# trellis-check agents in parallel via the Workflow tool); implement stays
+# single unless the prd decomposes into independent units. See workflow.md
+# "Trellis × Ultracode" for the full protocol.
+#
+# Leave commented out to keep the default (single sub-agent dispatch). Even with
+# this off, a single-turn "Ultracode is on" system-reminder still triggers the
+# inline fallback line baked into the base breadcrumbs.
+#
+# Accepts: true / false / yes / no / 1 / 0 / on / off (case-insensitive).
+#
+# ultracode:
+#   enabled: true

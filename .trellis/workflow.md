@@ -37,6 +37,28 @@ python3 ./.trellis/scripts/task.py create-pr [name] [--dry-run]
 
 > `task.py --help` has the authoritative list. Session pointers live under `.trellis/.runtime/sessions/`.
 
+### Activity Log (multi-LLM)
+
+Per-task `activity.jsonl` — append-only record of *which LLM (platform/model) did what, when*, for cross-LLM handoff: an agent picking up a task reads what a prior agent already did and decided, without sharing a conversation.
+
+```bash
+python3 ./.trellis/scripts/task.py activity-append [<name>] --action <verb> [--note "<text>"]
+python3 ./.trellis/scripts/task.py activity-log [<name>]    # readable timeline
+```
+
+- **Auto-stamped** on phase transitions — `start`/`archive` write entries; journal and `task.json` `meta.agents[]` record the acting platform/model.
+- **Manual milestones** — stamp `decision` / `handoff` at points worth preserving for the next agent.
+- **Resolution** — `platform` auto-derives from `TRELLIS_CONTEXT_ID`; `model` is best-effort (pass `--model` or set `TRELLIS_ACTIVITY_MODEL`, else null).
+
+[codex-sub-agent, codex-inline]
+**Codex handoff protocol** (hooks don't auto-stamp Codex — be explicit):
+1. On pickup: `task.py activity-log <name>`, then read `prd.md` + `research/`.
+2. On each meaningful step: `task.py activity-append <name> --platform codex --action <verb> --note "<what>"`.
+3. On commit: add the trailer `Co-Authored-By: Codex <noreply@openai.com>`.
+[/codex-sub-agent, codex-inline]
+
+**Claude dispatching Codex**: when a Codex job returns, write its output into the task dir, stamp `activity-append <name> --platform codex --action <verb> --note "via codex:rescue"` on its behalf (ambient session id auto-drops for cross-platform stamps; pass `--session <codex-job-id>` if known), and add the `Co-Authored-By: Codex` trailer.
+
 ### Workspace System
 
 Session records under `.trellis/workspace/<developer>/journal-N.md` (auto-rotates at 2000 lines):
@@ -56,8 +78,9 @@ python3 ./.trellis/scripts/get_context.py --mode phase --step <X.Y>  # detailed 
 
 <!--
   BREADCRUMB CONTRACT: the [workflow-state:STATUS] blocks below are the single
-  source of truth for the per-turn <workflow-state> breadcrumb parsed by
-  .claude/hooks/inject-workflow-state.py and .codex/hooks/inject-workflow-state.py.
+  source of truth for the per-turn <workflow-state> breadcrumb parsed by the
+  platform UserPromptSubmit hooks (e.g. .claude/hooks/inject-workflow-state.py,
+  .codex/hooks/inject-workflow-state.py).
   STATUS charset [A-Za-z0-9_-]+. Variants: <status>-inline (codex
   dispatch_mode=inline), <status>-ultra (config ultracode.enabled, claude).
   Missing variant tags fall back to the base status; a missing base tag
@@ -159,11 +182,11 @@ python3 ./.trellis/scripts/get_context.py --mode phase --step <step>   # e.g. --
 
 ## Phase 1: Plan
 
-Goal: figure out what to build; produce a clear prd and the context needed to implement it.
+Goal: figure out what to build; produce a clear requirements doc and the context needed to implement it.
 
 #### 1.1 Requirement exploration `[repeatable]`
 
-Create the task if it doesn't exist (`task.py create "<title>" --slug <name>` — no `MM-DD-` prefix in the slug, it's added automatically), then iterate on `prd.md` with the user. Prefer researching over asking; prefer options over open-ended questions; update prd.md as answers land.
+Create the task if it doesn't exist (`task.py create "<task title>" --slug <name>` — no `MM-DD-` date prefix in the slug, it's added automatically), then iterate on `prd.md` with the user. Prefer researching over asking; prefer options over open-ended questions; update prd.md as answers land.
 
 #### 1.2 Research `[as needed · repeatable]`
 
@@ -215,11 +238,11 @@ If the same issue was fixed multiple times this task, load `trellis-break-loop`:
 
 #### 3.3 Spec update `[when new knowledge surfaced]`
 
-If this task produced knowledge worth keeping — a new pattern, a pitfall, a technical decision — capture it under `.trellis/spec/` (the `trellis-update-spec` skill has the format). Nothing new? Move on.
+If this task produced knowledge worth keeping — a new pattern or convention, a pitfall you hit, a technical decision — capture it under `.trellis/spec/` (the `trellis-update-spec` skill has the format). Nothing new? Move on; no judgment ceremony needed.
 
 #### 3.4 Commit changes
 
-The main session drives the commit so `/finish-work` can run cleanly (work commits first, bookkeeping commits after).
+The main session drives the commit so `/finish-work` can run cleanly afterwards (work commits first, bookkeeping commits after — never interleaved).
 
 - `git status --porcelain` + `git log --oneline -5`: see what's dirty, match the repo's commit style. Clean tree → skip to 3.5.
 - Group the files you edited this session into logical commits and state the plan in user-facing text. Dirty files you did NOT touch this session are listed for the user to include/exclude — **never silently committed**.
@@ -227,7 +250,7 @@ The main session drives the commit so `/finish-work` can run cleanly (work commi
 
 #### 3.5 Wrap-up
 
-Remind the user to run `/trellis:finish-work` (archives the task, records the session).
+Remind the user they can run `/trellis:finish-work` (archives the task, records the session).
 
 ---
 
@@ -289,4 +312,4 @@ Only when the prd decomposes into independent units, and the task dir is already
 
 ## Customizing
 
-Edit this file directly — the hooks are parsers only. When you change a `[workflow-state:STATUS]` block, keep the tag pair matched and restart the session. Custom statuses: add a new block + a lifecycle hook in `task.json.hooks.after_*` that writes the status. Full machinery reference: `packages/cli/src/templates/` in this repo (this deployment is intentionally slimmer than the multi-platform template).
+Edit this file directly — the hooks are parsers only. When you change a `[workflow-state:STATUS]` block, keep the tag pair matched and restart the session. Custom statuses: add a new block + a lifecycle hook in `task.json.hooks.after_*` that writes the status. The runtime parser is your platform's `inject-workflow-state.py` hook — it reads this file only, with no fallback text baked into the script.

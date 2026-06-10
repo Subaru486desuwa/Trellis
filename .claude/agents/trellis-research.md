@@ -119,17 +119,6 @@ Each `{TASK_DIR}/research/<topic>.md` should follow:
 
 ---
 
-## External Research Evidence Rules
-
-`web_search` snippets are discovery, not evidence. For every external target (SDK, library, API, GitHub project) you cite:
-
-- **Fetch the real source first**: `git clone --depth 1 <repo> /tmp/research-<slug>`, `curl -sSL` the raw file, `npm pack` / `pip download --no-deps` the package. If the sandbox blocks network, say so explicitly and stop — do not fabricate substitutes from prior knowledge.
-- **Every technical claim needs a verbatim snippet** (5–40 lines, copy-pasted fenced block) with a precise citation `repo/path/file.ts:120-145`. API signatures must be pulled from source, never reconstructed from memory.
-- **Banned phrases when not followed by a snippet**: "it basically does X", "typically", "likely uses", "seems to", "the architecture looks like". No evidence → delete the claim; an empty section beats a hallucinated one.
-- **Self-check**: if the implementer reads ONLY your file (no internet, no repo access), can they start coding? If not, keep researching. Mark explicitly what your sources do NOT answer.
-
----
-
 ## Guidelines
 
 ### DO
@@ -145,4 +134,4 @@ Each `{TASK_DIR}/research/<topic>.md` should follow:
 - Don't write code or modify files outside `{TASK_DIR}/research/`
 - Don't guess uncertain info
 - Don't paste full research text into the reply (files are the deliverable)
-- Don't silently sit on problems you notice — record bugs/risks you find in a short "Observations" section (fixing them is the implementer's job, not yours)
+- Don't propose improvements or critique implementation (that's not your role)
