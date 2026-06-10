@@ -611,7 +611,7 @@ function buildTrellisContext(
 ): string {
   const taskDir = readCurrentTask(projectRoot, platformInput, ctx, contextKey);
   if (!taskDir) {
-    return "No active Trellis task found. Read .trellis/ before proceeding.";
+    return "No active Polygon task found. Read .trellis/ before proceeding.";
   }
 
   const prd = readText(join(taskDir, "prd.md"));
@@ -622,7 +622,7 @@ function buildTrellisContext(
     : "";
 
   return [
-    "## Trellis Task Context",
+    "## Polygon Task Context",
     `Task directory: ${taskDir}`,
     "",
     "### prd.md",
@@ -787,7 +787,7 @@ class TurnContextCache {
 // whether it reads workflow.md, the per-turn breadcrumb, or the tool prompt.
 // ---------------------------------------------------------------------------
 
-const SUBAGENT_DISPATCH_PROTOCOL = `Sub-agent dispatch protocol (Trellis): your dispatch prompt MUST start with one line "Active task: <task path from \`task.py current\`>" before any other instructions. No exceptions. On class-2 platforms (codex / copilot / gemini / qoder) the sub-agent depends on this line because there is no hook to inject task context. On class-1 platforms (claude / cursor / opencode / kiro / codebuddy / droid) and on Pi, the line is the canonical fallback when hook/extension injection misses. trellis-research uses the line to know which {task_dir}/research/ to write into.
+const SUBAGENT_DISPATCH_PROTOCOL = `Sub-agent dispatch protocol (Polygon): your dispatch prompt MUST start with one line "Active task: <task path from \`task.py current\`>" before any other instructions. No exceptions. On class-2 platforms (codex / copilot / gemini / qoder) the sub-agent depends on this line because there is no hook to inject task context. On class-1 platforms (claude / cursor / opencode / kiro / codebuddy / droid) and on Pi, the line is the canonical fallback when hook/extension injection misses. trellis-research uses the line to know which {task_dir}/research/ to write into.
 
 Wrong: prompt: "implement the new feature"
 Correct: prompt: "Active task: .trellis/tasks/05-09-pi-workflow-state-injection\\n\\nImplement the new feature ..."`;
@@ -952,7 +952,7 @@ function buildSubagentPrompt(
   const prompt = input.prompt ?? "";
 
   return [
-    "## Trellis Agent Definition",
+    "## Polygon Agent Definition",
     definition.content || "(missing agent definition)",
     "",
     context,
@@ -1072,7 +1072,7 @@ export default function trellisExtension(pi: {
   pi.registerTool?.({
     name: "subagent",
     label: "Subagent",
-    description: "Run a Trellis project sub-agent with active task context.",
+    description: "Run a Polygon project sub-agent with active task context.",
     promptSnippet: SUBAGENT_DISPATCH_PROTOCOL,
     promptGuidelines: SUBAGENT_DISPATCH_PROTOCOL,
     parameters: {
@@ -1133,7 +1133,7 @@ export default function trellisExtension(pi: {
   pi.on?.("session_start", (event, ctx) => {
     getContextKey(event, ctx);
     ctx?.ui?.notify?.(
-      "Trellis project context is available. Use /trellis-continue to resume the current task.",
+      "Polygon project context is available. Use /trellis-continue to resume the current task.",
       "info",
     );
   });

@@ -395,20 +395,20 @@ describe("scrubPiSettings", () => {
 });
 
 describe("scrubCodexConfigToml", () => {
-  const TEMPLATE = `# Project-scoped Codex defaults for Trellis workflows.
+  const TEMPLATE = `# Project-scoped Codex defaults for Polygon workflows.
 # Codex loads this after ~/.codex/config.toml when you work in this project.
 
 # Keep AGENTS.md as the primary project instruction file.
 project_doc_fallback_filenames = ["AGENTS.md"]
 
-# NOTE: Trellis's SessionStart + UserPromptSubmit hooks require opt-in.
+# NOTE: Polygon's SessionStart + UserPromptSubmit hooks require opt-in.
 # Add the following to your USER-level config at ~/.codex/config.toml
 # (not this project file — features.* must be enabled globally):
 #
 #   [features]
 #   codex_hooks = true
 #
-# Without this flag, hooks.json is ignored and Trellis context won't
+# Without this flag, hooks.json is ignored and Polygon context won't
 # be injected into Codex sessions.
 `;
 
@@ -429,7 +429,7 @@ my_key = "value"
     expect(content).toContain("[my_section]");
     expect(content).toContain('my_key = "value"');
     expect(content).not.toContain("project_doc_fallback_filenames");
-    expect(content).not.toContain("Trellis's SessionStart");
+    expect(content).not.toContain("Polygon's SessionStart");
   });
 
   it("strips just the assignment line when comments are absent", () => {
@@ -444,13 +444,13 @@ key = 1
   });
 
   it("strips the new `hooks = true` marker line (Codex 0.129+) alongside the legacy `codex_hooks` line", () => {
-    const newTemplate = `# Project-scoped Codex defaults for Trellis workflows.
+    const newTemplate = `# Project-scoped Codex defaults for Polygon workflows.
 # Codex loads this after ~/.codex/config.toml when you work in this project.
 
 # Keep AGENTS.md as the primary project instruction file.
 project_doc_fallback_filenames = ["AGENTS.md"]
 
-# NOTE: Trellis's SessionStart + UserPromptSubmit hooks require opt-in.
+# NOTE: Polygon's SessionStart + UserPromptSubmit hooks require opt-in.
 # Add the following to your USER-level config at ~/.codex/config.toml
 # (not this project file — features.* must be enabled globally):
 #
@@ -458,7 +458,7 @@ project_doc_fallback_filenames = ["AGENTS.md"]
 #   hooks = true
 #   codex_hooks = true
 #
-# Without this flag, hooks.json is ignored and Trellis context won't
+# Without this flag, hooks.json is ignored and Polygon context won't
 # be injected into Codex sessions.
 `;
     const { content, fullyEmpty } = scrubCodexConfigToml(newTemplate);

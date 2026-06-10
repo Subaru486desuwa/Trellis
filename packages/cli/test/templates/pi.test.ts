@@ -56,7 +56,7 @@ export {
 }
 
 describe("pi templates", () => {
-  it("provides the three Trellis sub-agent definitions", () => {
+  it("provides the three Polygon sub-agent definitions", () => {
     const agents = getAllAgents();
     expect(agents.map((agent) => agent.name).sort()).toEqual([
       "trellis-check",
@@ -136,7 +136,7 @@ describe("pi templates", () => {
     expect(extension).not.toContain("global fallback");
   });
 
-  it("extension injects Trellis context into Pi bash tool calls", () => {
+  it("extension injects Polygon context into Pi bash tool calls", () => {
     const extension = getExtensionTemplate();
 
     expect(extension).toContain("function injectTrellisContextIntoBash");
@@ -165,7 +165,7 @@ describe("pi templates", () => {
     expect(extension).toContain('return { command: "pi", argsPrefix: [] }');
   });
 
-  it("extension forwards Trellis context into spawned Pi subagents", () => {
+  it("extension forwards Polygon context into spawned Pi subagents", () => {
     const extension = getExtensionTemplate();
 
     expect(extension).toContain(
@@ -194,13 +194,13 @@ describe("pi templates", () => {
     expect(extension).not.toContain("toPiPromptArgument");
   });
 
-  it("extension builds subagent prompts from Trellis agent context", () => {
+  it("extension builds subagent prompts from Polygon agent context", () => {
     const extension = getExtensionTemplate();
 
     expect(extension).toContain("function stripMarkdownFrontmatter");
     expect(extension).toContain("content: stripMarkdownFrontmatter(raw)");
     expect(extension).toContain("parseAgentConfig(raw)");
-    expect(extension).toContain('"## Trellis Agent Definition"');
+    expect(extension).toContain('"## Polygon Agent Definition"');
   });
 
   it("extension parses agent frontmatter and per-call model/thinking overrides", () => {
@@ -343,7 +343,7 @@ fallbackModels:
     expect(extension).toContain('pi.on?.("input", (event, ctx) => {');
     expect(extension).toContain('action: "continue"');
     expect(extension).not.toContain("message: buildTrellisContext");
-    expect(extension).not.toContain('message:\n      "Trellis project context');
+    expect(extension).not.toContain('message:\n      "Polygon project context');
     expect(extension).not.toContain("persistent: true");
   });
 

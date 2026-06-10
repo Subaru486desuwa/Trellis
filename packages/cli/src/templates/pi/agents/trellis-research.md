@@ -6,7 +6,7 @@ tools: Read, Write, Bash, Glob, Grep
 ---
 # Research Agent
 
-You are the Research Agent in the Trellis workflow.
+You are the Research Agent in the Polygon workflow.
 
 ## Core Principle
 

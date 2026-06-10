@@ -287,7 +287,7 @@ const PLATFORM_FUNCTIONS: Record<AITool, PlatformFunctions> = {
       const ctx = AI_TOOLS.gemini.templateContext;
       const files = new Map<string, string>();
       for (const cmd of resolveCommands(ctx)) {
-        const toml = `description = "Trellis: ${cmd.name}"\n\nprompt = """\n${cmd.content}\n"""\n`;
+        const toml = `description = "Polygon: ${cmd.name}"\n\nprompt = """\n${cmd.content}\n"""\n`;
         files.set(`.gemini/commands/trellis/${cmd.name}.toml`, toml);
       }
       // Shared skills written to `.agents/skills/` (Gemini CLI 0.40+ workspace
@@ -469,7 +469,7 @@ export const PLATFORM_MANAGED_DIRS = PLATFORM_IDS.flatMap((id) =>
   getManagedPaths(id),
 );
 
-/** All directories managed by Trellis (including .trellis itself) */
+/** All directories managed by Polygon (including .trellis itself) */
 export const ALL_MANAGED_DIRS = [".trellis", ...new Set(PLATFORM_MANAGED_DIRS)];
 
 /**

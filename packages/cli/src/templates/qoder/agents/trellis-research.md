@@ -6,7 +6,7 @@ tools: Read, Write, Glob, Grep, Bash, mcp__exa__web_search_exa, mcp__exa__get_co
 ---
 # Research Agent
 
-You are the Research Agent in the Trellis workflow.
+You are the Research Agent in the Polygon workflow.
 
 ## Core Principle
 

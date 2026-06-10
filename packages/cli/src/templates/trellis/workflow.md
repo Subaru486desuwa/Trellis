@@ -11,7 +11,7 @@
 
 ---
 
-## Trellis System
+## Polygon System
 
 ### Developer Identity
 
@@ -111,7 +111,7 @@ No active task. Judge the turn's real size yourself:
 Iterate on prd.md with the user (the `trellis-brainstorm` skill has the template); persist research to `{task_dir}/research/` — files survive compaction, chat doesn't.
 Phase 1.3 (only if Phase 2 will dispatch sub-agents): curate `implement.jsonl` / `check.jsonl` so sub-agents get spec context injected. Working inline (the default)? Skip it.
 When the prd is settled, run `task.py start <task-dir>`.
-**Ultracode**: if this turn shows an "Ultracode is on" system-reminder, research may fan out per the "Trellis × Ultracode" section.
+**Ultracode**: if this turn shows an "Ultracode is on" system-reminder, research may fan out per the "Polygon × Ultracode" section.
 [/workflow-state:planning]
 
 [workflow-state:planning-inline]
@@ -133,7 +133,7 @@ When the prd is settled, run `task.py start <task-dir>`.
 Implement in the main session by default — you hold the full conversation context. Read `{task_dir}/prd.md` + `research/` and the relevant `.trellis/spec/` guides before coding; run lint / type-check / tests before reporting done.
 Sub-agents (`trellis-implement` / `trellis-check` / `trellis-research` via the Task/Agent tool; `trellis-check` and `trellis-update-spec` also exist as skills) are optional tools for parallelizable or context-heavy chunks — not a required pipeline. **Sub-agent dispatch protocol (all platforms, all sub-agents)**: the dispatch prompt MUST start with `Active task: <task path from \`task.py current\`>` — for `trellis-research` this resolves which `{task_dir}/research/` to write into. Sub-agents never run git commit/push/merge; if you ARE one, work directly — don't spawn another.
 Then commit (Phase 3.4): the main session states the commit plan, lists unrecognized dirty files for the user to include/exclude (never silently commit them), runs `git commit` — no `--amend`, no push. Wrap up with `/trellis:finish-work` (it refuses to run on a dirty working tree).
-**Ultracode**: if this turn shows an "Ultracode is on" system-reminder, verification may fan out per the "Trellis × Ultracode" section; the commit stays main-driven.
+**Ultracode**: if this turn shows an "Ultracode is on" system-reminder, verification may fan out per the "Polygon × Ultracode" section; the commit stays main-driven.
 [/workflow-state:in_progress]
 
 [workflow-state:in_progress-inline]
@@ -143,7 +143,7 @@ Then commit (Phase 3.4): state the commit plan, list unrecognized dirty files fo
 
 [workflow-state:in_progress-ultra]
 **Trivial turn — answer directly, no fan-out**: pure Q&A / status checks / one-line fixes get a direct answer at full reasoning depth; fan-out is for substantive implement / verify work.
-Ultracode is on: for real verification, fan out `trellis-check` agents via the Workflow tool — one per review dimension (see the "Trellis × Ultracode" section for the pipeline template) — and reconcile findings in the main session. Implement stays single by default; fan out `trellis-implement` only when the prd splits into independent, non-overlapping units (worktree isolation, experimental). Every dispatch prompt starts with `Active task: <task path from \`task.py current\`>`, repo-root relative; Workflow agents self-load prd + jsonl (no hook injection), and check fan-out runs at repo root, not in a worktree. Workflow agents never run `git commit` / `push` / `merge`.
+Ultracode is on: for real verification, fan out `trellis-check` agents via the Workflow tool — one per review dimension (see the "Polygon × Ultracode" section for the pipeline template) — and reconcile findings in the main session. Implement stays single by default; fan out `trellis-implement` only when the prd splits into independent, non-overlapping units (worktree isolation, experimental). Every dispatch prompt starts with `Active task: <task path from \`task.py current\`>`, repo-root relative; Workflow agents self-load prd + jsonl (no hook injection), and check fan-out runs at repo root, not in a worktree. Workflow agents never run `git commit` / `push` / `merge`.
 **Sub-agent self-exemption**: if you are already a trellis-implement / trellis-check worker, do the work directly — no further fan-out.
 After checks reconcile green, the MAIN session drives the commit (Phase 3.4) — commit plan in user-facing text, unrecognized dirty files confirmed with the user, `git commit`, no `--amend`, no push — then `/trellis:finish-work`. If implement fan-out used worktrees, merge them back into the task branch first.
 [/workflow-state:in_progress-ultra]
@@ -254,7 +254,7 @@ Remind the user they can run `/trellis:finish-work` (archives the task, records 
 
 ---
 
-## Trellis × Ultracode
+## Polygon × Ultracode
 
 "Ultracode" is Claude Code's Workflow tool — large-scale parallel agent orchestration. This is the protocol the `*-ultra` breadcrumbs (and the single-turn "Ultracode is on" reminder) point to.
 

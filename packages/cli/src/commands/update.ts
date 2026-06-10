@@ -97,7 +97,7 @@ const TRELLIS_BLOCK_START = "<!-- TRELLIS:START -->";
 const TRELLIS_BLOCK_END = "<!-- TRELLIS:END -->";
 const LEGACY_UNTRACKED_AGENTS_MD_BLOCK_HASHES = new Set<string>([
   // v0.5.0-beta.17 and earlier wrote AGENTS.md but did not hash-track it.
-  // This hash is the pristine Trellis-managed block before the Subagents
+  // This hash is the pristine Polygon-managed block before the Subagents
   // section was added, so old untouched projects can be updated without a
   // false "modified by you" conflict.
   "c1f511b1cfc1902f2147da159f09cc51f380b0c9e341cdb3ac5dea5233f3e307",
@@ -169,7 +169,7 @@ function buildAgentsMdTemplate(cwd: string): string {
   }
 
   // Existing file has no managed-block markers (pre-0.5.0-beta.18 project, or
-  // user hand-wrote AGENTS.md without ever running through Trellis). Append
+  // user hand-wrote AGENTS.md without ever running through Polygon). Append
   // the template's managed block at the end so user content is preserved
   // instead of clobbered.
   const templateBlock = getTrellisManagedBlock(agentsMdContent);
@@ -547,11 +547,11 @@ export function applyConfigSectionsAdded(
 /**
  * Detect if legacy Codex upgrade is needed.
  *
- * Old Trellis versions used `.agents/skills/` as codex's configDir.
+ * Old Polygon versions used `.agents/skills/` as codex's configDir.
  * New versions use `.codex/` for Codex-specific config and `.agents/skills/`
  * as a shared layer.
  *
- * Detection: Trellis-tracked hashes contain `.agents/skills/` entries
+ * Detection: Polygon-tracked hashes contain `.agents/skills/` entries
  * but `.codex/` does not exist. This avoids misclassifying repos that
  * have `.agents/skills/` from other tools (Kimi CLI, Amp, etc.).
  *
@@ -1516,7 +1516,7 @@ async function promptMigrationAction(
           .join("\n"),
       )
     : chalk.gray(
-        `  Why prompted: file content doesn't match the Trellis template hash\n` +
+        `  Why prompted: file content doesn't match the Polygon template hash\n` +
           `  for this path — usually local customization. If unsure, pick [b].`,
       );
 
@@ -1811,9 +1811,9 @@ function printMigrationResult(result: MigrationResult): void {
 export async function update(options: UpdateOptions): Promise<void> {
   const cwd = process.cwd();
 
-  // Check if Trellis is initialized
+  // Check if Polygon is initialized
   if (!fs.existsSync(path.join(cwd, DIR_NAMES.WORKFLOW))) {
-    console.log(chalk.red("Error: Trellis not initialized in this directory."));
+    console.log(chalk.red("Error: Polygon not initialized in this directory."));
     console.log(chalk.gray("Run 'trellis init' first."));
     return;
   }
@@ -1902,7 +1902,7 @@ export async function update(options: UpdateOptions): Promise<void> {
     );
   }
 
-  // Detect legacy Codex (has .agents/skills/ tracked by Trellis but no .codex/)
+  // Detect legacy Codex (has .agents/skills/ tracked by Polygon but no .codex/)
   // NOTE: this MUST happen before pruneOrphanManifestKeys below, since the
   // detector reads the raw manifest looking for .agents/skills/ markers that
   // the prune step would otherwise consider orphans (codex hasn't been added
@@ -2220,7 +2220,7 @@ export async function update(options: UpdateOptions): Promise<void> {
           );
           console.log(
             chalk.gray(
-              "  Hash-verified: only files matching known Trellis templates are deleted. Your local customizations (hash mismatch) are still preserved.",
+              "  Hash-verified: only files matching known Polygon templates are deleted. Your local customizations (hash mismatch) are still preserved.",
             ),
           );
         }

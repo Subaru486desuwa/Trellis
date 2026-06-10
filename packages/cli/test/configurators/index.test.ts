@@ -308,7 +308,7 @@ describe("collectPlatformTemplates", () => {
     kilo: ".kilocode/skills",
     kiro: ".kiro/skills",
     // Gemini CLI 0.40+ reads `.agents/skills/` as a workspace alias.
-    // Trellis writes there (shared with Codex) so a single skill set serves
+    // Polygon writes there (shared with Codex) so a single skill set serves
     // both platforms — eliminates duplicate-skill warnings (issue #224).
     gemini: ".agents/skills",
     antigravity: ".agent/skills",

@@ -44,7 +44,7 @@ from .paths import (
 # Helpers
 # =============================================================================
 
-_PACKAGE_NAME = "@subaru486/trellis"
+_PACKAGE_NAME = "@subaru486/polygon"
 _UPDATE_CHECK_TIMEOUT_SECONDS = 1.0
 _VERSION_RE = re.compile(
     r"^\s*(\d+)(?:\.(\d+))?(?:\.(\d+))?(?:-([0-9A-Za-z.-]+))?\s*$"
@@ -182,7 +182,7 @@ def _collect_package_git_info(
     """Collect Git status for independent package repositories.
 
     Packages marked with ``git: true`` in config.yaml are authoritative.
-    When the Trellis root is not a Git repo and no configured package repos are
+    When the Polygon root is not a Git repo and no configured package repos are
     available, optionally fall back to the bounded polyrepo child scan.
 
     Returns:
@@ -295,7 +295,7 @@ def _fetch_trellis_version_output() -> str | None:
 
 def _extract_available_update_version(output: str) -> str | None:
     update_match = re.search(
-        r"Trellis update available:\s*"
+        r"Polygon update available:\s*"
         r"(?P<current>\S+)\s*(?:→|->)\s*(?P<latest>\S+)",
         output,
     )
@@ -411,7 +411,7 @@ def _get_update_hint(repo_root: Path) -> str | None:
         return None
 
     return (
-        f"Trellis update available: {current_version} -> {latest_version}, "
+        f"Polygon update available: {current_version} -> {latest_version}, "
         f"run npm install -g {_PACKAGE_NAME}@latest"
     )
 

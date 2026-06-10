@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Trellis configuration reader.
+Polygon configuration reader.
 
 Reads settings from .trellis/config.yaml with sensible defaults.
 """

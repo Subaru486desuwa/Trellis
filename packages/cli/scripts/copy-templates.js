@@ -19,7 +19,7 @@
  * - src/templates/markdown/ - Markdown templates (spec, guides)
  *
  * Note: We NO LONGER copy from the project's own .trellis/, .cursor/, .claude/
- * because those may be customized for the Trellis project itself.
+ * because those may be customized for the Polygon project itself.
  */
 
 import { cpSync, readdirSync, statSync, mkdirSync } from "node:fs";

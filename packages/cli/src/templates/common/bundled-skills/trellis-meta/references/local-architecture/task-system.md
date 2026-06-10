@@ -1,6 +1,6 @@
 # Local Task System
 
-The Trellis task system is stored entirely under `.trellis/tasks/` in the user project. Each task is a directory containing requirements, context, research, state, and relationship information.
+The Polygon task system is stored entirely under `.trellis/tasks/` in the user project. Each task is a directory containing requirements, context, research, state, and relationship information.
 
 ## Task Directory Structure
 
@@ -46,7 +46,7 @@ The AI should not treat phase numbers as task status. Task progress is mainly de
 
 ## Active Task
 
-The user sees a "current task," but Trellis stores active task state per session.
+The user sees a "current task," but Polygon stores active task state per session.
 
 ```text
 .trellis/.runtime/sessions/<context-key>.json
@@ -98,4 +98,4 @@ When modifying the task system, the AI should prefer script commands to maintain
 | Change context rules | Phase 1.3 in `.trellis/workflow.md` and related platform agent/hook instructions. |
 | Change archive policy | `.trellis/scripts/common/task_store.py` / `task_utils.py`. |
 
-These are local files in the user project. Do not default to editing Trellis CLI source code unless the user wants to contribute upstream.
+These are local files in the user project. Do not default to editing Polygon CLI source code unless the user wants to contribute upstream.

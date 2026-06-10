@@ -13,7 +13,7 @@ import { compareVersions } from "../utils/compare-versions.js";
 export { VERSION, PACKAGE_NAME };
 
 /**
- * Check if a Trellis update is available (compare project version with CLI version)
+ * Check if a Polygon update is available (compare project version with CLI version)
  */
 function checkForUpdates(cwd: string): void {
   const versionFile = path.join(cwd, DIR_NAMES.WORKFLOW, ".version");
@@ -28,7 +28,7 @@ function checkForUpdates(cwd: string): void {
     // CLI is newer than project - update available
     console.log(
       chalk.yellow(
-        `\n⚠️  Trellis update available: ${projectVersion} → ${cliVersion}`,
+        `\n⚠️  Polygon update available: ${projectVersion} → ${cliVersion}`,
       ),
     );
     console.log(chalk.gray(`   Run: trellis update\n`));

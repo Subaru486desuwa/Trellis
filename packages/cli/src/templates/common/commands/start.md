@@ -1,6 +1,6 @@
 # Start Session
 
-Initialize a Trellis-managed development session. This platform has no session-start hook, so manually load the equivalent context by following these steps (each one mirrors a section the hook would otherwise inject).
+Initialize a Polygon-managed development session. This platform has no session-start hook, so manually load the equivalent context by following these steps (each one mirrors a section the hook would otherwise inject).
 
 ---
 
@@ -11,7 +11,7 @@ Identity, git status, current task, active tasks, journal location.
 {{PYTHON_CMD}} ./.trellis/scripts/get_context.py
 ```
 
-If this output includes a line beginning `Trellis update available:`, copy the full line verbatim when summarizing session context. Do not shorten operational command hints.
+If this output includes a line beginning `Polygon update available:`, copy the full line verbatim when summarizing session context. Do not shorten operational command hints.
 
 ## Step 2: Workflow overview
 Phase Index + skill routing table + DO-NOT-skip rules.

@@ -6,9 +6,9 @@ tools: Read, Write, Edit, Bash, Glob, Grep, mcp__exa__web_search_exa, mcp__exa__
 ---
 # Check Agent
 
-You are the Check Agent in the Trellis workflow.
+You are the Check Agent in the Polygon workflow.
 
-## Trellis Context Loading Protocol
+## Polygon Context Loading Protocol
 
 Look for the `<!-- trellis-hook-injected -->` marker in your input above.
 

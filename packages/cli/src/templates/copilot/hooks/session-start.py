@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Copilot Session Start Hook - Emit Trellis session-start context.
+Copilot Session Start Hook - Emit Polygon session-start context.
 
 Microsoft VS Code Agent hooks are in preview and have been documented since
 VS Code 1.110 (February 2026). The official documentation
@@ -11,7 +11,7 @@ additional context into the agent's conversation.
 
 This script emits the spec-compliant SessionStart payload. Whether Copilot
 actually consumes `additionalContext` depends on the user's installed VS Code
-and Copilot versions, which is outside Trellis's control. UserPromptSubmit
+and Copilot versions, which is outside Polygon's control. UserPromptSubmit
 breadcrumbs remain available as a per-turn complement.
 """
 
@@ -111,7 +111,7 @@ def should_skip_injection() -> bool:
 
 
 def configure_project_encoding(project_dir: Path) -> None:
-    """Reuse Trellis' shared Windows stdio encoding helper before JSON output."""
+    """Reuse Polygon' shared Windows stdio encoding helper before JSON output."""
     scripts_dir = project_dir / ".trellis" / "scripts"
     if str(scripts_dir) not in sys.path:
         sys.path.insert(0, str(scripts_dir))
@@ -329,7 +329,7 @@ def _build_workflow_toc(workflow_path: Path) -> str:
             out_lines.append(line)
     out_lines += ["", "---", ""]
 
-    phases = _extract_range(content, "Phase Index", "Customizing Trellis (for forks)")
+    phases = _extract_range(content, "Phase Index", "Customizing Polygon (for forks)")
     if phases:
         out_lines.append(_strip_breadcrumb_tag_blocks(phases).rstrip())
 
@@ -358,7 +358,7 @@ def main() -> None:
     output = StringIO()
 
     output.write("""<session-context>
-You are starting a new session in a Trellis-managed project.
+You are starting a new session in a Polygon-managed project.
 Read and follow all instructions below carefully.
 </session-context>
 

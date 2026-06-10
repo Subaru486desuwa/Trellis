@@ -129,7 +129,7 @@ describe("update() integration", () => {
   }
 
   /**
-   * Stage a project as if an older Trellis version installed pristine template
+   * Stage a project as if an older Polygon version installed pristine template
    * files, then the current CLI is about to update it. The hash file records
    * the older pristine content so update() must treat those files as
    * auto-update candidates.
@@ -346,8 +346,8 @@ describe("update() integration", () => {
     const targetFull = path.join(tmpDir, targetRelative);
     const templateContent = fs.readFileSync(targetFull, "utf-8");
     const modifiedOldContent = removeSubagentsSection(templateContent).replace(
-      "# Trellis Instructions",
-      "# Custom Trellis Instructions",
+      "# Polygon Instructions",
+      "# Custom Polygon Instructions",
     );
     fs.writeFileSync(targetFull, modifiedOldContent);
 

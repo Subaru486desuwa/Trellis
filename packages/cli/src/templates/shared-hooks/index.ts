@@ -61,7 +61,7 @@ export type SharedHookPlatform =
  *   event), so it takes just `inject-subagent-context.py`.
  * - Claude Code `statusLine` is intentionally not installed by default.
  *   Users can add their own statusLine command in `.claude/settings.json`
- *   without Trellis owning a generated hook file.
+ *   without Polygon owning a generated hook file.
  */
 export const SHARED_HOOKS_BY_PLATFORM: Record<
   SharedHookPlatform,

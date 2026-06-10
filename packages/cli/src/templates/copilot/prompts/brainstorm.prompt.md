@@ -1,5 +1,5 @@
 ---
-description: "Trellis Copilot prompt: Brainstorm - Requirements Discovery (AI Coding Enhanced)"
+description: "Polygon Copilot prompt: Brainstorm - Requirements Discovery (AI Coding Enhanced)"
 ---
 
 # Brainstorm - Requirements Discovery (AI Coding Enhanced)

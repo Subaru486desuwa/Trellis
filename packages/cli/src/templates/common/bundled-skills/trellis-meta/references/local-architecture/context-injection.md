@@ -1,20 +1,20 @@
 # Local Context Injection System
 
-Trellis context injection aims to make AI read the right files at the right time instead of relying on model memory. In a user project, injection is implemented by `.trellis/` scripts together with platform hooks, agents, and skills.
+Polygon context injection aims to make AI read the right files at the right time instead of relying on model memory. In a user project, injection is implemented by `.trellis/` scripts together with platform hooks, agents, and skills.
 
 ## Injected Context Types
 
 | Type | Source | Purpose |
 | --- | --- | --- |
 | session context | `.trellis/scripts/get_context.py` | Current developer, git status, active task, active tasks, journal, packages. |
-| workflow context | `.trellis/workflow.md` | Current Trellis flow and next action. |
+| workflow context | `.trellis/workflow.md` | Current Polygon flow and next action. |
 | spec context | `.trellis/spec/` + task JSONL | Specs that must be followed during implementation/checking. |
 | task context | `.trellis/tasks/<task>/prd.md`, `info.md`, `research/` | Current task requirements, design, and research. |
 | platform context | Platform hooks/settings/agents | Lets different AI tools read the files above through their own mechanisms. |
 
 ## session-start
 
-Platforms with session-start support inject a Trellis overview when a session starts, clears, compacts, or receives a similar event. Injected content usually includes:
+Platforms with session-start support inject a Polygon overview when a session starts, clears, compacts, or receives a similar event. Injected content usually includes:
 
 - workflow summary.
 - current task status.
@@ -32,7 +32,7 @@ If the user wants to change "what the AI should do next in a given state," edit 
 
 ## sub-agent context
 
-Implement and check agents need task context. Trellis has two loading modes:
+Implement and check agents need task context. Polygon has two loading modes:
 
 1. **hook push**: a platform hook injects `prd.md` and the files referenced by `implement.jsonl` / `check.jsonl` before the agent starts.
 2. **agent pull**: the agent definition instructs the agent to read the active task, PRD, and JSONL context after startup.

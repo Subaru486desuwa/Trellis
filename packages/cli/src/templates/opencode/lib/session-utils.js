@@ -9,7 +9,7 @@ const PYTHON_CMD = platform() === "win32" ? "python" : "python3"
 
 const FIRST_REPLY_NOTICE = `<first-reply-notice>
 On the first visible assistant reply in this session, begin with exactly one short Chinese sentence:
-Trellis SessionStart 已注入：workflow、当前任务状态、开发者身份、git 状态、active tasks、spec 索引已加载。
+Polygon SessionStart 已注入：workflow、当前任务状态、开发者身份、git 状态、active tasks、spec 索引已加载。
 Then continue directly with the user's request. This notice is one-shot: do not repeat it after the first assistant reply in the same session.
 </first-reply-notice>`
 
@@ -214,7 +214,7 @@ export function buildSessionContext(ctx, platformInput = null) {
   const parts = []
 
   parts.push(`<trellis-context>
-You are starting a new session in a Trellis-managed project.
+You are starting a new session in a Polygon-managed project.
 Read and follow all instructions below carefully.
 </trellis-context>`)
   parts.push(FIRST_REPLY_NOTICE)

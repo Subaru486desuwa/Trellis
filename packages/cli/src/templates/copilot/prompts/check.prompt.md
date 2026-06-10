@@ -1,5 +1,5 @@
 ---
-description: "Trellis Copilot prompt: check.prompt"
+description: "Polygon Copilot prompt: check.prompt"
 ---
 
 Check if the code you just wrote follows the development guidelines.

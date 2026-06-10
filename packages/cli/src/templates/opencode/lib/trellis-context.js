@@ -1,5 +1,5 @@
 /**
- * Trellis Context Manager
+ * Polygon Context Manager
  *
  * Utility class for OpenCode plugins providing file reading,
  * JSONL parsing, and context building capabilities.
@@ -64,11 +64,11 @@ function buildContextKey(platformName, kind, value) {
 }
 
 // Matches `trellis-implement`, `trellis-check`, `trellis-research` exactly.
-// Used by chat.message plugins to skip injection inside Trellis sub-agent turns.
+// Used by chat.message plugins to skip injection inside Polygon sub-agent turns.
 const TRELLIS_SUBAGENT_RE = /^trellis-(implement|check|research)$/
 
 /**
- * Return true when the OpenCode `chat.message` input represents a Trellis
+ * Return true when the OpenCode `chat.message` input represents a Polygon
  * sub-agent turn. `input.agent` is set by OpenCode when a Task tool spawns a
  * child session with a custom agent (see `packages/opencode/src/tool/task.ts`).
  */
@@ -79,7 +79,7 @@ export function isTrellisSubagent(input) {
 }
 
 /**
- * Trellis Context Manager
+ * Polygon Context Manager
  */
 export class TrellisContext {
   constructor(directory) {
@@ -88,7 +88,7 @@ export class TrellisContext {
   }
 
   // ============================================================
-  // Trellis Project Detection
+  // Polygon Project Detection
   // ============================================================
 
   isTrellisProject() {

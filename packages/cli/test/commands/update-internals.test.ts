@@ -267,7 +267,7 @@ describe("shouldExcludeFromBackup", () => {
 
   // Windows `path.relative` returns backslash paths. The slash-prefixed
   // exclude patterns (/worktrees/, /tasks/, /spec/, ...) must still match
-  // after normalization, otherwise Trellis's native worktree protection
+  // after normalization, otherwise Polygon's native worktree protection
   // silently fails on Windows and `collectAllFiles` descends into nested
   // full project copies (observed in the field: stack-overflow crash on
   // `trellis update --migrate`, late April 2026).

@@ -541,7 +541,7 @@ python3 script.py  # Works!
 python3 script.py  # 'python3' is not recognized
 python script.py   # Works!
 
-# Trellis docs/config should say the rule, not guess one alias everywhere
+# Polygon docs/config should say the rule, not guess one alias everywhere
 {{PYTHON_CMD}} script.py
 ```
 

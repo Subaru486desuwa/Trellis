@@ -853,7 +853,7 @@ describe("regression: SessionStart reinject on clear/compact (MIN-231)", () => {
   });
 });
 
-describe("regression: agent-session Trellis update hint", () => {
+describe("regression: agent-session Polygon update hint", () => {
   let tmpDir: string;
   const pythonCmd = process.platform === "win32" ? "python" : "python3";
 
@@ -924,64 +924,64 @@ describe("regression: agent-session Trellis update hint", () => {
   it("shows a concise update hint when trellis --version reports a newer version", () => {
     const output = runContextWithTrellisOutput(
       "0.5.0",
-      "Trellis update available: 0.5.0 → 0.5.9\nRun: trellis update\n0.5.9",
+      "Polygon update available: 0.5.0 → 0.5.9\nRun: trellis update\n0.5.9",
     );
 
-    expect(output).toContain("Trellis update available: 0.5.0 -> 0.5.9");
+    expect(output).toContain("Polygon update available: 0.5.0 -> 0.5.9");
     expect(output).toContain(
-      "run npm install -g @subaru486/trellis@latest",
+      "run npm install -g @subaru486/polygon@latest",
     );
     expect(output).toContain("SESSION CONTEXT");
   });
 
   it("does not show a hint when installed version is equal or newer", () => {
     expect(runContextWithTrellisOutput("0.5.9", "0.5.9")).not.toContain(
-      "Trellis update available",
+      "Polygon update available",
     );
     fs.rmSync(path.join(tmpDir, ".trellis", ".runtime"), {
       recursive: true,
       force: true,
     });
     expect(runContextWithTrellisOutput("0.6.0", "0.5.9")).not.toContain(
-      "Trellis update available",
+      "Polygon update available",
     );
   });
 
   it("silently skips the hint when trellis --version fails or version parsing fails", () => {
     expect(runContextWithTrellisOutput("0.5.0", null)).not.toContain(
-      "Trellis update available",
+      "Polygon update available",
     );
     fs.rmSync(path.join(tmpDir, ".trellis", ".runtime"), {
       recursive: true,
       force: true,
     });
     expect(runContextWithTrellisOutput("not-a-version", "0.5.9")).not.toContain(
-      "Trellis update available",
+      "Polygon update available",
     );
   });
 
   it("does not burn the once-per-session marker when version lookup fails", () => {
     expect(runContextWithTrellisOutput("0.5.0", null)).not.toContain(
-      "Trellis update available",
+      "Polygon update available",
     );
 
     const output = runContextWithTrellisOutput("0.5.0", "0.5.9");
 
-    expect(output).toContain("Trellis update available: 0.5.0 -> 0.5.9");
+    expect(output).toContain("Polygon update available: 0.5.0 -> 0.5.9");
   });
 
   it("uses the final trellis --version token when no update line is present", () => {
     const output = runContextWithTrellisOutput("0.5.0", "0.5.9");
 
-    expect(output).toContain("Trellis update available: 0.5.0 -> 0.5.9");
+    expect(output).toContain("Polygon update available: 0.5.0 -> 0.5.9");
   });
 
   it("only attempts the default text update hint once per session", () => {
     const first = runContextWithTrellisOutput("0.5.0", "0.5.9");
     const second = runContextWithTrellisOutput("0.5.0", "0.5.9");
 
-    expect(first).toContain("Trellis update available: 0.5.0 -> 0.5.9");
-    expect(second).not.toContain("Trellis update available");
+    expect(first).toContain("Polygon update available: 0.5.0 -> 0.5.9");
+    expect(second).not.toContain("Polygon update available");
     expect(
       fs.existsSync(
         path.join(
@@ -1006,7 +1006,7 @@ describe("regression: agent-session Trellis update hint", () => {
     ]) {
       expect(
         pythonFunctionBody(commonSessionContext, functionName),
-        `${functionName} should not check Trellis updates`,
+        `${functionName} should not check Polygon updates`,
       ).not.toContain("_get_update_hint");
     }
     expect(commonGitContext).toContain("if args.mode == \"record\":");
@@ -1202,7 +1202,7 @@ describe("regression: current-task path normalization", () => {
     (hook) => hook.name === "session-start.py",
   )?.content;
   const firstReplyNoticeSentence =
-    "Trellis SessionStart 已注入：workflow、当前任务状态、开发者身份、git 状态、active tasks、spec 索引已加载。";
+    "Polygon SessionStart 已注入：workflow、当前任务状态、开发者身份、git 状态、active tasks、spec 索引已加载。";
 
   beforeEach(() => {
     tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "trellis-current-task-"));
@@ -2209,7 +2209,7 @@ describe("regression: current-task path normalization", () => {
     expect(parsed.hookSpecificOutput?.updatedInput?.prompt).toBe(prompt);
   });
 
-  it("[session-current-task] Cursor generic subagents do not receive Trellis jsonl injection", () => {
+  it("[session-current-task] Cursor generic subagents do not receive Polygon jsonl injection", () => {
     setupTaskRepo();
     writeProjectFile(path.join(".git", "HEAD"), "ref: refs/heads/main\n");
     const injectSubagentContextScript = getSharedHookScripts().find(
@@ -2480,9 +2480,9 @@ describe("regression: current-task path normalization", () => {
   it("[#248] Copilot template does not assert Copilot ignores SessionStart hook output", () => {
     // GitHub #248: Microsoft's VS Code Agent hooks docs (preview, since VS
     // Code 1.110, Feb 2026) document SessionStart additionalContext as the
-    // injection mechanism. The previous Trellis hook hardcoded a misleading
+    // injection mechanism. The previous Polygon hook hardcoded a misleading
     // "currently ignores" claim in both the docstring and the runtime
-    // systemMessage. Both must stay removed; Trellis should not re-introduce
+    // systemMessage. Both must stay removed; Polygon should not re-introduce
     // a pessimistic absolute claim about Copilot's consumption behavior.
     const content = expectTemplateContent(
       copilotSessionStart,
@@ -2496,7 +2496,7 @@ describe("regression: current-task path normalization", () => {
       "Copilot currently ignores sessionStart hook output",
     );
     expect(content).not.toContain("systemMessage");
-    expect(content).not.toContain("Trellis context injected");
+    expect(content).not.toContain("Polygon context injected");
     expect(content).not.toContain(firstReplyNoticeSentence);
   });
 
@@ -2948,7 +2948,7 @@ describe("regression: current-task path normalization", () => {
     );
   });
 
-  it("[workflow-state] silent exit 0 when not a Trellis project (no .trellis/ dir)", () => {
+  it("[workflow-state] silent exit 0 when not a Polygon project (no .trellis/ dir)", () => {
     // No .trellis/ at all — hook should silently exit
     writeWorkflowStateHook();
     fs.rmSync(path.join(tmpDir, ".trellis"), { recursive: true, force: true });
@@ -5027,7 +5027,7 @@ describe("regression: class-2 platforms use pull-based sub-agent context", () =>
       it("implement/check definitions contain pull-based prelude", () => {
         for (const file of preludeAgents) {
           const content = fs.readFileSync(path.join(tmpDir, file), "utf-8");
-          expect(content).toContain("Required: Load Trellis Context First");
+          expect(content).toContain("Required: Load Polygon Context First");
           expect(content).toContain("task.py current --source");
         }
       });
@@ -5046,7 +5046,7 @@ describe("regression: class-2 platforms use pull-based sub-agent context", () =>
         // runs before Phase 1.3's jsonl curation.
         for (const file of nonPreludeAgents) {
           const content = fs.readFileSync(path.join(tmpDir, file), "utf-8");
-          expect(content).not.toContain("Required: Load Trellis Context First");
+          expect(content).not.toContain("Required: Load Polygon Context First");
         }
       });
 
@@ -5166,7 +5166,7 @@ describe("regression: pi uses TypeScript extension assets instead of Python hook
         path.join(tmpDir, ".pi", "agents", agent),
         "utf-8",
       );
-      expect(content).toContain("Required: Load Trellis Context First");
+      expect(content).toContain("Required: Load Polygon Context First");
       expect(content).toContain("task.py current --source");
     }
   });
@@ -5212,7 +5212,7 @@ describe("regression: research agent persists findings to task dir", () => {
   }
 
   // Gemini CLI 0.40+ rejects the comma-separated `tools:` line that other
-  // platforms accept (Zod expects an array or omission). Trellis omits the
+  // platforms accept (Zod expects an array or omission). Polygon omits the
   // line entirely so the sub-agent inherits parent tools — see issue #224
   // and research/agent-tools-frontmatter.md. The persist contract still
   // applies (body references {TASK_DIR}/research/ and the PERSIST keyword).
@@ -5359,7 +5359,7 @@ describe("regression: Gemini CLI 0.40.x template compatibility (#224)", () => {
 
   it("[#224] gemini agent .md files do NOT carry a comma-separated tools line", () => {
     // Gemini CLI 0.40+ Zod schema rejects `tools: a, b, c` with
-    // "tools: Expected array, received string". Trellis omits the line so
+    // "tools: Expected array, received string". Polygon omits the line so
     // sub-agents inherit parent tools (per research/agent-tools-frontmatter.md).
     for (const entry of fs.readdirSync(geminiAgentsDir)) {
       if (!entry.endsWith(".md")) continue;
@@ -5441,7 +5441,7 @@ describe("regression: Gemini CLI 0.40.x template compatibility (#224)", () => {
   it("[trellis-hooks-env] all hook templates honor TRELLIS_HOOKS=0 / TRELLIS_DISABLE_HOOKS=1", () => {
     // All shipped hook scripts must early-return when the operator sets
     // TRELLIS_HOOKS=0 (or TRELLIS_DISABLE_HOOKS=1), so subprocess wrappers
-    // and casual-chat scenarios can disable Trellis injection without
+    // and casual-chat scenarios can disable Polygon injection without
     // editing config or restarting under different settings.
     const sharedHookTargets = [
       "session-start.py",
@@ -5518,7 +5518,7 @@ describe("regression: Gemini CLI 0.40.x template compatibility (#224)", () => {
 
 describe("regression: session-start.py f-string Python <=3.11 compat (0.5.2)", () => {
   // PEP 498 (Python <=3.11) forbids backslashes inside the *expression* part
-  // of an f-string. Trellis 0.5.0/0.5.1 shipped session-start hooks with
+  // of an f-string. Polygon 0.5.0/0.5.1 shipped session-start hooks with
   //   `f"{drive}:\\{rest.replace('/', '\\')}"`
   // which crashes on parse with `SyntaxError: f-string expression part cannot
   // include a backslash`. PEP 701 (Python 3.12+) lifted this restriction, so
@@ -5585,7 +5585,7 @@ describe("regression: sub-agent context injection fallback (0.5.3)", () => {
   //
   // The fix: hook output now begins with a `<!-- trellis-hook-injected -->`
   // marker, and every class-1 trellis-implement / trellis-check definition
-  // file carries a Trellis Context Loading Protocol section telling the
+  // file carries a Polygon Context Loading Protocol section telling the
   // sub-agent to load context itself when the marker is absent.
   const HOOK_INJECTED_MARKER = "<!-- trellis-hook-injected -->";
 
@@ -5628,7 +5628,7 @@ describe("regression: sub-agent context injection fallback (0.5.3)", () => {
       // 1. References the marker
       expect(content).toContain(HOOK_INJECTED_MARKER);
       // 2. Has the protocol heading
-      expect(content).toContain("Trellis Context Loading Protocol");
+      expect(content).toContain("Polygon Context Loading Protocol");
       // 3. Tells AI how to find the active task path
       expect(content).toContain("Active task:");
       // 4. Tells AI which task files to Read in fallback path
@@ -5648,7 +5648,7 @@ describe("regression: sub-agent context injection fallback (0.5.3)", () => {
       const json = JSON.parse(fs.readFileSync(filePath, "utf-8"));
       const prompt: string = json.prompt ?? "";
       expect(prompt).toContain(HOOK_INJECTED_MARKER);
-      expect(prompt).toContain("Trellis Context Loading Protocol");
+      expect(prompt).toContain("Polygon Context Loading Protocol");
       expect(prompt).toContain("Active task:");
       expect(prompt).toContain("prd.md");
       const expectedJsonl = agent === "implement" ? "implement.jsonl" : "check.jsonl";
@@ -5657,7 +5657,7 @@ describe("regression: sub-agent context injection fallback (0.5.3)", () => {
   }
 
   it("[issue-247] kiro agent JSON files use Kiro CLI's current schema (prompt / hooks-object)", () => {
-    // Kiro CLI rejected Trellis's pre-0.5.7 agent JSON with "invalid agent"
+    // Kiro CLI rejected Polygon's pre-0.5.7 agent JSON with "invalid agent"
     // because the schema drifted: `instructions` → `prompt`, `tools` field
     // gained a sibling `allowedTools`, and `hooks` switched from an array of
     // `{on, command, timeout_ms}` entries to an object keyed by event name.
@@ -5770,14 +5770,14 @@ describe("regression: configSectionsAdded (issue-codex-dispatch-mode)", () => {
     fs.mkdirSync(trellisDir, { recursive: true });
     const userConfigPath = path.join(trellisDir, "config.yaml");
     const userConfig = [
-      "# Trellis Configuration",
+      "# Polygon Configuration",
       "session_commit_message: \"chore: record journal\"",
       "",
     ].join("\n");
     fs.writeFileSync(userConfigPath, userConfig);
 
     const bundledTemplate = [
-      "# Trellis Configuration",
+      "# Polygon Configuration",
       "session_commit_message: \"chore: record journal\"",
       "",
       "#-------------------------------------------------------------------------------",
@@ -5919,7 +5919,7 @@ describe("regression: safe auto-commit when .trellis/ is gitignored (0.5.10 → 
     execSync("git init -q -b main", { cwd: tmpDir });
     // Configure user so git commit succeeds in CI sandboxes.
     execSync('git config user.email "test@trellis.local"', { cwd: tmpDir });
-    execSync('git config user.name "Trellis Test"', { cwd: tmpDir });
+    execSync('git config user.name "Polygon Test"', { cwd: tmpDir });
   });
 
   afterEach(() => {
@@ -6300,7 +6300,7 @@ describe("regression: safe auto-commit when .trellis/ is gitignored (0.5.10 → 
       tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "trellis-safe-commit-"));
       execSync("git init -q -b main", { cwd: tmpDir });
       execSync('git config user.email "test@trellis.local"', { cwd: tmpDir });
-      execSync('git config user.name "Trellis Test"', { cwd: tmpDir });
+      execSync('git config user.name "Polygon Test"', { cwd: tmpDir });
     }
   });
 

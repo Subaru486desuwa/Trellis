@@ -38,7 +38,7 @@ export async function configureGemini(cwd: string): Promise<void> {
   const commandsDir = path.join(configRoot, "commands", "trellis");
   ensureDir(commandsDir);
   for (const cmd of resolveCommands(ctx)) {
-    const toml = `description = "Trellis: ${cmd.name}"\n\nprompt = """\n${cmd.content}\n"""\n`;
+    const toml = `description = "Polygon: ${cmd.name}"\n\nprompt = """\n${cmd.content}\n"""\n`;
     await writeFile(path.join(commandsDir, `${cmd.name}.toml`), toml);
   }
 

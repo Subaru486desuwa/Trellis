@@ -20,8 +20,8 @@
 </p>
 
 <p align="center">
-<a href="https://www.npmjs.com/package/@subaru486/trellis"><img src="https://img.shields.io/npm/v/@subaru486/trellis.svg?style=flat-square&color=2563eb" alt="npm version" /></a>
-<a href="https://www.npmjs.com/package/@subaru486/trellis"><img src="https://img.shields.io/npm/dw/@subaru486/trellis?style=flat-square&color=cb3837&label=downloads" alt="npm downloads" /></a>
+<a href="https://www.npmjs.com/package/@subaru486/polygon"><img src="https://img.shields.io/npm/v/@subaru486/polygon.svg?style=flat-square&color=2563eb" alt="npm version" /></a>
+<a href="https://www.npmjs.com/package/@subaru486/polygon"><img src="https://img.shields.io/npm/dw/@subaru486/polygon?style=flat-square&color=cb3837&label=downloads" alt="npm downloads" /></a>
 <a href="https://github.com/Subaru486desuwa/Trellis/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-AGPL--3.0-16a34a.svg?style=flat-square" alt="license" /></a>
 <a href="https://github.com/Subaru486desuwa/Trellis/stargazers"><img src="https://img.shields.io/github/stars/Subaru486desuwa/Trellis?style=flat-square&color=eab308" alt="stars" /></a>
 <a href="https://docs.trytrellis.app/"><img src="https://img.shields.io/badge/docs-trytrellis.app-0f766e?style=flat-square" alt="docs" /></a>
@@ -55,7 +55,7 @@
 
 ```bash
 # 1. Install Trellis
-npm install -g @subaru486/trellis@latest
+npm install -g @subaru486/polygon@latest
 
 # 2. Initialize in your repo
 trellis init -u your-name

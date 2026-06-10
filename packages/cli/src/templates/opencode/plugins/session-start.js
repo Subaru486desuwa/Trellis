@@ -1,6 +1,6 @@
 /* global process */
 /**
- * Trellis Session Start Plugin
+ * Polygon Session Start Plugin
  *
  * Injects context when user sends the first message in a session.
  * Uses OpenCode's chat.message hook directly so the context persists in history.
@@ -43,7 +43,7 @@ export default async ({ directory, client }) => {
         const agent = input.agent || "unknown"
         debugLog("session", "chat.message called, sessionID:", sessionID, "agent:", agent)
 
-        // Skip Trellis sub-agent turns — sub-agent context is injected by
+        // Skip Polygon sub-agent turns — sub-agent context is injected by
         // `inject-subagent-context.js` on the parent's tool.execute.before;
         // re-injecting the main-session SessionStart here would drown that.
         if (isTrellisSubagent(input)) {
@@ -68,7 +68,7 @@ export default async ({ directory, client }) => {
 
         if (await hasPersistedInjectedContext(client, ctx.directory, sessionID)) {
           contextCollector.markProcessed(sessionID)
-          debugLog("session", "Skipping - session already contains persisted Trellis context")
+          debugLog("session", "Skipping - session already contains persisted Polygon context")
           return
         }
 

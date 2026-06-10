@@ -1,157 +1,83 @@
-<p align="center">
-<picture>
-<source srcset="assets/trellis.png" media="(prefers-color-scheme: dark)">
-<source srcset="assets/trellis.png" media="(prefers-color-scheme: light)">
-<img src="assets/trellis.png" alt="Trellis Logo" width="500" style="image-rendering: -webkit-optimize-contrast; image-rendering: crisp-edges;">
-</picture>
-</p>
+<h1 align="center">Polygon</h1>
 
 <p align="center">
-<strong>开箱即用的 AI 编码工程化框架</strong><br/>
-<sub>AI 写代码很快，但它每次会话都从零开始理解项目，记不住你的规范，也记不住团队级别的需求。Trellis 会把规范、任务、记忆沉淀进仓库，让任意 Coding Agent 都按你的工程标准来实践。</sub>
+<strong><a href="https://github.com/mindfoldhq/trellis">Trellis</a> 的轻量化 fork —— 为 AI 编程持久化 spec、任务与多 LLM 活动日志，去掉一切繁文缛节。</strong>
 </p>
 
 <p align="center">
 <a href="./README.md">English</a> •
-<a href="https://docs.trytrellis.app/zh">文档</a> •
-<a href="https://docs.trytrellis.app/zh/start/install-and-first-task">快速开始</a> •
-<a href="https://docs.trytrellis.app/zh/advanced/multi-platform">支持平台</a> •
-<a href="https://docs.trytrellis.app/zh/start/real-world-scenarios">使用场景</a>
+<a href="https://docs.trytrellis.app/">上游文档</a>
 </p>
 
 <p align="center">
-<a href="https://www.npmjs.com/package/@subaru486/trellis"><img src="https://img.shields.io/npm/v/@subaru486/trellis.svg?style=flat-square&color=2563eb" alt="npm version" /></a>
-<a href="https://www.npmjs.com/package/@subaru486/trellis"><img src="https://img.shields.io/npm/dw/@subaru486/trellis?style=flat-square&color=cb3837&label=downloads" alt="npm downloads" /></a>
+<a href="https://www.npmjs.com/package/@subaru486/polygon"><img src="https://img.shields.io/npm/v/@subaru486/polygon.svg?style=flat-square&color=2563eb" alt="npm version" /></a>
 <a href="https://github.com/Subaru486desuwa/Trellis/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-AGPL--3.0-16a34a.svg?style=flat-square" alt="license" /></a>
-<a href="https://github.com/Subaru486desuwa/Trellis/stargazers"><img src="https://img.shields.io/github/stars/Subaru486desuwa/Trellis?style=flat-square&color=eab308" alt="stars" /></a>
-<a href="https://docs.trytrellis.app/zh"><img src="https://img.shields.io/badge/docs-trytrellis.app-0f766e?style=flat-square" alt="docs" /></a>
-<a href="https://discord.com/invite/tWcCZ3aRHc"><img src="https://img.shields.io/badge/Discord-Join-5865F2?style=flat-square&logo=discord&logoColor=white" alt="Discord" /></a>
-<a href="https://github.com/Subaru486desuwa/Trellis/issues"><img src="https://img.shields.io/github/issues/Subaru486desuwa/Trellis?style=flat-square&color=e67e22" alt="open issues" /></a>
-<a href="https://github.com/Subaru486desuwa/Trellis/pulls"><img src="https://img.shields.io/github/issues-pr/Subaru486desuwa/Trellis?style=flat-square&color=9b59b6" alt="open PRs" /></a>
-<a href="https://deepwiki.com/Subaru486desuwa/Trellis"><img src="https://img.shields.io/badge/Ask-DeepWiki-blue?style=flat-square" alt="Ask DeepWiki" /></a>
-<a href="https://chatgpt.com/?q=Explain+the+project+Subaru486desuwa/Trellis+on+GitHub"><img src="https://img.shields.io/badge/Ask-ChatGPT-74aa9c?style=flat-square&logo=openai&logoColor=white" alt="Ask ChatGPT" /></a>
+<a href="https://github.com/mindfoldhq/trellis"><img src="https://img.shields.io/badge/fork%20of-mindfoldhq%2Ftrellis-6b7280.svg?style=flat-square" alt="fork of trellis" /></a>
 </p>
 
-<p align="center">
-<img src="assets/trellis-demo-zh.gif" alt="Trellis 工作流演示" width="100%">
-</p>
+---
 
-## 为什么用 Trellis？
+AI 编程代理每个会话都从零开始 —— 不记得你的项目、约定、上个会话的决定。Trellis 用持久化到仓库的 spec / 任务 / journal 解决了这个问题；Polygon 保留这个内核，删掉所有挡在你和工作之间的东西：
 
-| 能力 | 带来的改变 |
-| --- | --- |
-| **自动注入规范** | 将规范沉淀到 `.trellis/spec/` 之后，Trellis 会在每次会话中按当前任务自动按需注入相关上下文，无需反复说明。 |
-| **任务驱动工作流** | PRD、实现上下文、审查上下文与任务状态统一存放于 `.trellis/tasks/`，AI 开发过程保持结构化、可追溯。 |
-| **项目记忆** | `.trellis/workspace/` 中的工作日志（journal）会保留上一次会话的脉络，因此每次新会话都能基于真实上下文开始。 |
-| **团队共享标准** | Spec 随仓库一同版本化，个人总结出的规则与流程可以直接成为整个团队的基础设施。 |
-| **多平台复用** | 同一套 Trellis 结构覆盖 14 个 AI coding 平台，无需为每个工具单独搭建工作流。 |
+- **Inline 优先。** 主代理直接改代码。没有强制 sub-agent 派发、没有 override 短语白名单、没有反合理化对照表。工作流规则是建议性的，由代理（和你）判断这一轮真正需要什么。
+- **轻量上下文注入。** SessionStart 注入从 27 KB 砍到约 2 KB；每轮面包屑按任务状态只有 2–4 行。长期日常使用几乎不占上下文。
+- **多 LLM 活动日志。** 每个任务带一份 `activity.jsonl`，记录哪个平台/模型在何时做了什么 —— Claude Code 和 Codex 可以在任务中途互相交接，来源可溯。
 
-## 前置要求
+## 安装
 
-- **Node.js** >= 18
-- **Python** >= 3.9
+```bash
+npm install -g @subaru486/polygon
+```
+
+安装后 `polygon`、`trellis`、`tl` 三个命令等价。
 
 ## 快速开始
 
 ```bash
-# 1. 安装 Trellis
-npm install -g @subaru486/trellis@latest
-
-# 2. 在仓库中初始化
-trellis init -u your-name
-
-# 3. 或仅初始化你实际使用的平台
-trellis init --cursor --opencode --codex -u your-name
+cd your-project
+trellis init -y        # 默认部署精简版 claude+codex 配置
 ```
 
-查看 [快速开始](https://docs.trytrellis.app/zh/start/install-and-first-task) 与 [支持平台](https://docs.trytrellis.app/zh/advanced/multi-platform) 指南以了解详细配置步骤。
+之后直接在 AI 编程代理里用自然语言描述需求即可。注入的面包屑会让代理自行判断这一轮的真实规模：
 
-## 如何使用
+- 多轮实现类工作 → 自动建任务、和你 brainstorm 出 PRD、再实现
+- 提问和小修小补 → 直接做，没有任务仪式
 
-使用流程非常简单：
+工作流三阶段：
 
-1. **用自然语言描述你的需求。**
-2. **与 AI 一起头脑风暴**，一次只回答一个问题，直到 PRD 足够清晰，然后开始实现。
-3. **交由 AI 自主推进** —— AI 会调用 `trellis-implement` 编写代码，并自动依据 Spec、lint、type-check 与测试进行校验。
-4. **当工作完成或会话上下文接近上限时，输入 `/trellis:finish-work`**。Trellis 会归档任务并更新工作日志。
+| 阶段 | 做什么 | 持久化到 |
+|---|---|---|
+| Plan | brainstorm + 调研 → PRD | `.trellis/tasks/<task>/prd.md` |
+| Execute | 主会话内实现；lint / 类型检查 / 测试 | 你的代码 + `activity.jsonl` |
+| Finish | 沉淀经验 → commit → 归档 | `.trellis/spec/`、journal、任务归档 |
 
-## 工作原理
+## 多 LLM 活动日志
 
-Trellis 内部运行一个 4 阶段循环，skill 与子代理均由系统自动调用：
+```bash
+python3 .trellis/scripts/task.py activity-log
+# 2026-06-10T04:40:40Z  [claude/-]               start: task started
+# 2026-06-10T04:40:51Z  [claude/claude-fable-5]  implement: archive smoke via updated workflow
+# 2026-06-10T04:41:02Z  [claude/-]               finish: task archived
+```
 
-1. **Plan（规划）** —— `trellis-brainstorm` 逐题梳理需求并写入 `prd.md`；涉及资料调研的部分派发给 `trellis-research` 子代理处理。阶段产出为一组精选的 Spec 与研究文件，由 `implement.jsonl` / `check.jsonl` 编排。
-2. **Implement（实现）** —— `trellis-implement` 子代理依据 PRD 编写代码，所需上下文已按 `implement.jsonl` 自动注入，不会执行 git commit。
-3. **Verify（验证）** —— `trellis-check` 子代理基于 diff 对照 Spec 逐项核查，并运行 lint、type-check 与测试，在能力范围内自动修复。
-4. **Finish（收尾）** —— 执行最终检查后，`trellis-update-spec` 将本轮新增的认知沉淀回 `.trellis/spec/`，为下一次会话积累上下文。
+`task.py start` / `task.py archive` 自动打戳；`task.py activity-append` 记录手动条目（决策、交接）。`task.json` 把参与者汇总进 `meta.agents[]`，journal 会话记录 `**Agent**:` 行 —— 任务中途在 Claude Code 和 Codex 之间切换，不丢"谁做了什么"。
 
-## 资源
+## 与上游 Trellis 的差异
 
-| 需求 | 链接 |
-| --- | --- |
-| 在仓库中安装 Trellis | [快速开始](https://docs.trytrellis.app/zh/start/install-and-first-task) |
-| 了解各平台之间的差异 | [支持平台](https://docs.trytrellis.app/zh/advanced/multi-platform) |
-| 查看实际使用场景 | [真实场景](https://docs.trytrellis.app/zh/start/real-world-scenarios) |
-| 从 Spec 模板起步 | [Spec 模板](https://docs.trytrellis.app/zh/templates/specs-index) |
-| 跟进版本更新 | [更新日志](https://docs.trytrellis.app/zh/changelog) |
+| | 上游 Trellis | Polygon |
+|---|---|---|
+| 派发模型 | implement/check 强制 sub-agent | 默认 inline，sub-agent 可选 |
+| 工作流规则 | 强制执行（override 短语、jsonl 门禁） | 建议性 |
+| SessionStart 注入 | ~27 KB | ~2 KB |
+| 每轮面包屑 | 完整状态块 | 2–4 行 |
+| 部署的 workflow.md | 按平台多变体 | 一份约 290 行无平台标签通用版 |
+| 活动日志 | — | 每任务 `activity.jsonl`，多 LLM |
+| 默认平台 | 交互式选择 | claude + codex（`-y`） |
 
-## 常见问题
+多平台资产（Cursor、Gemini CLI、Copilot 等）在 npm 包内保留 —— 其他平台 flag 仍可用，拿到的是通用精简内容。
 
-<details>
-<summary><strong>Trellis 与 <code>CLAUDE.md</code>、<code>AGENTS.md</code>、<code>.cursorrules</code> 有何区别？</strong></summary>
+## 致谢与许可
 
-这些文件本身是有用的入口，但容易在长期使用中变得冗长臃肿。Trellis 在此之上补充了：作用域明确的 Spec、按任务划分的 PRD、工作流关卡、工作区记忆，以及按平台自动生成的适配文件。
+Polygon fork 自 Trellis 团队的 [mindfoldhq/trellis](https://github.com/mindfoldhq/trellis) —— 任务/spec/journal 架构、多平台支持与更新机制都是上游的工作。核心概念仍可参考[上游文档](https://docs.trytrellis.app/)；行为有差异处，以本 README 为准。
 
-</details>
-
-<details>
-<summary><strong>Trellis 是否仅支持 Claude Code？</strong></summary>
-
-并非如此。Trellis 是项目层基础设施，可在多种 coding agent 与 IDE 中使用。
-
-</details>
-
-<details>
-<summary><strong>Trellis 适合个人开发者还是团队？</strong></summary>
-
-两者皆可。个人开发者主要受益于记忆机制与可复用的工作流；团队使用收益更大——标准统一、任务边界清晰、上下文可审查，且具备跨平台可移植性。
-
-</details>
-
-<details>
-<summary><strong>是否需要手动编写每一个 Spec 文件？</strong></summary>
-
-并不需要。多数团队的做法是先由 AI 基于现有代码生成初稿，再人工收紧关键规则。Trellis 的效果取决于是否将高价值规则显式化并纳入版本管理。
-
-</details>
-
-<details>
-<summary><strong>团队协作时是否会频繁产生冲突？</strong></summary>
-
-不会。个人工作区的 journal 按开发者独立维护，共享的 Spec 与任务则进入仓库，可以像其他项目产物一样进行评审与改进。
-
-</details>
-
-## Star 历史
-
-[![Star History Chart](https://api.star-history.com/svg?repos=Subaru486desuwa/Trellis&type=Date)](https://star-history.com/#Subaru486desuwa/Trellis&Date)
-
-## 社区与资源
-
-- [官方文档](https://docs.trytrellis.app/zh)
-- [GitHub Issues](https://github.com/Subaru486desuwa/Trellis/issues)
-- [Discord](https://discord.com/invite/tWcCZ3aRHc)
-- [技术博客](https://docs.trytrellis.app/zh/blog)
-
-### 联系我们
-
-<p align="center">
-<img src="assets/wx_link7.jpg" alt="微信群" width="260" />
-&nbsp;&nbsp;&nbsp;&nbsp;
-<img src="assets/feishu-group-qr.jpg" alt="飞书话题群" width="260" />
-</p>
-
-<p align="center">
-<a href="https://github.com/Subaru486desuwa/Trellis">官方仓库</a> •
-<a href="https://github.com/Subaru486desuwa/Trellis/blob/main/LICENSE">AGPL-3.0 License</a> •
-由 <a href="https://github.com/mindfold-ai">Mindfold</a> 构建
-</p>
+许可证与上游一致：[AGPL-3.0](./LICENSE)。

@@ -1,8 +1,8 @@
 /**
- * Trellis workflow templates
+ * Polygon workflow templates
  *
  * These are GENERIC templates for user projects.
- * Do NOT use Trellis project's own .trellis/ directory (which may be customized).
+ * Do NOT use Polygon project's own .trellis/ directory (which may be customized).
  *
  * Directory structure:
  *   trellis/
@@ -12,7 +12,7 @@
  *   │   └── *.py              # Main scripts (Python)
  *   ├── scripts-shell-archive/ # Archived shell scripts (for reference)
  *   ├── workflow.md           # Workflow guide
- *   ├── config.yaml            # Trellis configuration
+ *   ├── config.yaml            # Polygon configuration
  *   └── gitignore.txt         # .gitignore content
  */
 

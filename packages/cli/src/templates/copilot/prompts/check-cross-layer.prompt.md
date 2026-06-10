@@ -1,5 +1,5 @@
 ---
-description: "Trellis Copilot prompt: Cross-Layer Check"
+description: "Polygon Copilot prompt: Cross-Layer Check"
 ---
 
 # Cross-Layer Check

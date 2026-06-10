@@ -1,5 +1,5 @@
 name = "trellis-check"
-description = "Workspace-write Trellis reviewer that self-fixes spec drift, lint/type-check failures, and missing tests."
+description = "Workspace-write Polygon reviewer that self-fixes spec drift, lint/type-check failures, and missing tests."
 sandbox_mode = "workspace-write"
 
 developer_instructions = """
@@ -12,7 +12,7 @@ CRITICAL — Recursion guard (read first):
 
 ---
 
-## Required: Load Trellis Context First
+## Required: Load Polygon Context First
 
 This platform does NOT auto-inject task context via hook. Before doing anything else, you MUST load context yourself.
 
@@ -37,7 +37,7 @@ If the resolved task path has no `prd.md`, ask the user what to work on; do NOT 
 
 ---
 
-You are the Trellis reviewer agent.
+You are the Polygon reviewer agent.
 
 Your job is to review code changes against specs AND fix issues directly — not just report them. You have write access; use it.
 

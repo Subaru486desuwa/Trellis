@@ -80,7 +80,7 @@ export async function configureCodex(cwd: string): Promise<void> {
 
   // Codex is a class-2 (pull-based) platform: PreToolUse only fires for Bash
   // and CollabAgentSpawn hook is not implemented (#15486). Sub-agents must
-  // load Trellis context themselves via the prelude injected here.
+  // load Polygon context themselves via the prelude injected here.
   for (const agent of applyPullBasedPreludeToml(getAllAgents())) {
     await writeFile(
       path.join(codexAgentsRoot, `${agent.name}.toml`),
@@ -123,9 +123,9 @@ export async function configureCodex(cwd: string): Promise<void> {
     process.stderr.write(
       "⚠️  Codex hooks require `features.hooks = true` in your " +
         "~/.codex/config.toml (Codex 0.129+; older versions: `codex_hooks = true`). " +
-        "On Codex 0.129+ also run `/hooks` once to approve the Trellis " +
-        "UserPromptSubmit hook. Without these the Trellis workflow breadcrumb " +
-        "won't auto-inject. See Trellis docs for details.\n",
+        "On Codex 0.129+ also run `/hooks` once to approve the Polygon " +
+        "UserPromptSubmit hook. Without these the Polygon workflow breadcrumb " +
+        "won't auto-inject. See Polygon docs for details.\n",
     );
   }
 

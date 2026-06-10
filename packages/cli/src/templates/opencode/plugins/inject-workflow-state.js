@@ -1,10 +1,10 @@
 /* global process */
 /**
- * Trellis Workflow State Injection Plugin
+ * Polygon Workflow State Injection Plugin
  *
  * Per-turn UserPromptSubmit equivalent for OpenCode.
  *
- * On every chat.message, if a Trellis task is active, inject a short
+ * On every chat.message, if a Polygon task is active, inject a short
  * <workflow-state> breadcrumb reminding the main AI what task is
  * active and its expected flow. Breadcrumb text is pulled exclusively
  * from the project's workflow.md [workflow-state:STATUS] tag blocks —
@@ -167,7 +167,7 @@ export default async ({ directory }) => {
       // so it persists in conversation history.
       "chat.message": async (input, output) => {
         try {
-          // Skip Trellis sub-agent turns — the per-turn breadcrumb is for the
+          // Skip Polygon sub-agent turns — the per-turn breadcrumb is for the
           // main session only; sub-agent context comes from the parent's
           // tool.execute.before injection.
           if (isTrellisSubagent(input)) {

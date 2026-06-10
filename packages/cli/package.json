@@ -1,11 +1,12 @@
 {
-  "name": "@subaru486/trellis",
+  "name": "@subaru486/polygon",
   "version": "0.5.20",
-  "description": "AI capabilities grow like ivy — Trellis provides the structure to guide them along a disciplined path",
+  "description": "Polygon — a slim fork of Trellis: persistent specs, tasks and multi-LLM activity logs for AI coding, with lightweight context injection and inline-first workflow.",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "bin": {
+    "polygon": "./bin/trellis.js",
     "trellis": "./bin/trellis.js",
     "tl": "./bin/trellis.js"
   },

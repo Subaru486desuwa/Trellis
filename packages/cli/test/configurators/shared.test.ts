@@ -433,13 +433,13 @@ describe("resolvePlaceholders", () => {
 // ---------------------------------------------------------------------------
 
 describe("resolvePlaceholdersNeutral", () => {
-  it("renders {{CMD_REF:name}} as `name` (Trellis command) — platform-neutral", () => {
+  it("renders {{CMD_REF:name}} as `name` (Polygon command) — platform-neutral", () => {
     expect(
       resolvePlaceholdersNeutral("See {{CMD_REF:brainstorm}}", claudeCtx),
-    ).toBe("See `brainstorm` (Trellis command)");
+    ).toBe("See `brainstorm` (Polygon command)");
     expect(
       resolvePlaceholdersNeutral("See {{CMD_REF:brainstorm}}", codexCtx),
-    ).toBe("See `brainstorm` (Trellis command)");
+    ).toBe("See `brainstorm` (Polygon command)");
   });
 
   it("produces byte-identical CMD_REF output across platforms", () => {

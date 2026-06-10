@@ -1,6 +1,6 @@
 # Add Project-Local Conventions
 
-Often the user does not need to change Trellis mechanics; they need local AI to understand their team's conventions. In that case, prefer `.trellis/spec/` or a project-local skill instead of editing `trellis-meta`.
+Often the user does not need to change Polygon mechanics; they need local AI to understand their team's conventions. In that case, prefer `.trellis/spec/` or a project-local skill instead of editing `trellis-meta`.
 
 ## Where To Put Things
 
@@ -14,7 +14,7 @@ Often the user does not need to change Trellis mechanics; they need local AI to 
 
 ## Create A Project-Local Skill
 
-If the user wants AI to know "how this project customizes Trellis," create a local skill:
+If the user wants AI to know "how this project customizes Polygon," create a local skill:
 
 ```text
 .claude/skills/trellis-local/
@@ -26,14 +26,14 @@ Example:
 ```md
 ---
 name: trellis-local
-description: "Project-local Trellis customizations for this repository. Use when changing this project's Trellis workflow, hooks, local agents, or team-specific conventions."
+description: "Project-local Polygon customizations for this repository. Use when changing this project's Polygon workflow, hooks, local agents, or team-specific conventions."
 ---
 
-# Trellis Local
+# Polygon Local
 
 ## Local Scope
 
-This skill documents this repository's Trellis customizations only.
+This skill documents this repository's Polygon customizations only.
 
 ## Custom Workflow Rules
 
@@ -73,11 +73,11 @@ python3 ./.trellis/scripts/task.py add-context <task> check ".trellis/spec/backe
 
 ## Do Not Store Project-Private Rules In `trellis-meta`
 
-`trellis-meta` is a public skill for understanding Trellis architecture and local customization entry points. Put project-private content in:
+`trellis-meta` is a public skill for understanding Polygon architecture and local customization entry points. Put project-private content in:
 
 - `.trellis/spec/`
 - a project-local skill
 - the current task
 - workspace journal
 
-This prevents future updates to Trellis's built-in `trellis-meta` from overwriting the team's own conventions.
+This prevents future updates to Polygon's built-in `trellis-meta` from overwriting the team's own conventions.

@@ -315,7 +315,7 @@ describe("configurePlatform", () => {
         agent.name,
       );
       if (needsPrelude) {
-        expect(written).toContain("Required: Load Trellis Context First");
+        expect(written).toContain("Required: Load Polygon Context First");
         expect(written).toContain("task.py current --source");
         // Original body must still be present (prepend, not replace)
         const originalBody = agent.content
@@ -829,12 +829,12 @@ describe("configurePlatform", () => {
     expect(extension).toContain("class BoundedBufferCollector");
     expect(extension).toContain("function extractFinalAssistantText");
     expect(extension).toContain("function formatPiOutput");
-    expect(extension).toContain('"## Trellis Agent Definition"');
+    expect(extension).toContain('"## Polygon Agent Definition"');
     expect(extension).toContain('content: [{ type: "text", text: output }]');
     expect(extension).toContain("ctx?.ui?.notify?.(");
     expect(extension).toContain("systemPrompt:");
     expect(extension).not.toContain("message: buildTrellisContext");
-    expect(extension).not.toContain('message:\n      "Trellis project context');
+    expect(extension).not.toContain('message:\n      "Polygon project context');
     expect(extension).not.toContain("persistent: true");
     expect(extension).not.toContain(
       '["--mode", "json", "-p", "--no-session", toPiPromptArgument(prompt)]',
@@ -898,7 +898,7 @@ describe("configurePlatform", () => {
         "utf-8",
       );
       if (["trellis-implement", "trellis-check"].includes(agent.name)) {
-        expect(content).toContain("Required: Load Trellis Context First");
+        expect(content).toContain("Required: Load Polygon Context First");
       } else {
         expect(content).toBe(replacePythonCommandLiterals(agent.content));
       }
@@ -923,7 +923,7 @@ describe("configurePlatform", () => {
       ),
     ).toBeDefined();
     expect(templates?.get(".pi/agents/trellis-implement.md")).toContain(
-      "Required: Load Trellis Context First",
+      "Required: Load Polygon Context First",
     );
     expect(templates?.get(".pi/extensions/trellis/index.ts")).toBe(
       replacePythonCommandLiterals(getPiExtensionTemplate()),

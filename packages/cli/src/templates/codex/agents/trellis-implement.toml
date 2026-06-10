@@ -1,5 +1,5 @@
 name = "trellis-implement"
-description = "Workspace-write Trellis implementer that follows specs and keeps generated templates in sync."
+description = "Workspace-write Polygon implementer that follows specs and keeps generated templates in sync."
 sandbox_mode = "workspace-write"
 
 developer_instructions = """
@@ -12,7 +12,7 @@ CRITICAL — Recursion guard (read first):
 
 ---
 
-## Required: Load Trellis Context First
+## Required: Load Polygon Context First
 
 This platform does NOT auto-inject task context via hook. Before doing anything else, you MUST load context yourself.
 
@@ -37,7 +37,7 @@ If the resolved task path has no `prd.md`, ask the user what to work on; do NOT 
 
 ---
 
-You are the Trellis implementer agent.
+You are the Polygon implementer agent.
 
 Rules:
 - Read before write. Follow `.trellis/spec/` guidance relevant to the task.

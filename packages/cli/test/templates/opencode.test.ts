@@ -86,7 +86,7 @@ describe("opencode session-start history detection", () => {
 
     expect(context).toContain("<first-reply-notice>");
     expect(context).toContain(
-      "Trellis SessionStart 已注入：workflow、当前任务状态、开发者身份、git 状态、active tasks、spec 索引已加载。",
+      "Polygon SessionStart 已注入：workflow、当前任务状态、开发者身份、git 状态、active tasks、spec 索引已加载。",
     );
     expect(context).toContain("This notice is one-shot");
     expect(context.indexOf("<first-reply-notice>")).toBeLessThan(
@@ -94,7 +94,7 @@ describe("opencode session-start history detection", () => {
     );
   });
 
-  it("detects persisted Trellis context from metadata", () => {
+  it("detects persisted Polygon context from metadata", () => {
     const messages = [
       {
         info: { role: "user" },

@@ -1,6 +1,6 @@
 # Local Files Generated After Init
 
-`trellis init` writes the Trellis runtime into the user project. Later, `trellis update` tries to update Trellis-managed template files, but it uses `.trellis/.template-hashes.json` to determine which files have already been modified by the user.
+`trellis init` writes the Polygon runtime into the user project. Later, `trellis update` tries to update Polygon-managed template files, but it uses `.trellis/.template-hashes.json` to determine which files have already been modified by the user.
 
 This page only describes files that are visible and editable inside the user project.
 
@@ -30,7 +30,7 @@ This page only describes files that are visible and editable inside the user pro
 | `.trellis/scripts/` | Carefully | Local runtime. It can be customized, but only after understanding the call chain. |
 | `.trellis/.runtime/` | No | Runtime state, usually written automatically by hooks/scripts. |
 | `.trellis/.developer` | Carefully | Current developer identity. |
-| `.trellis/.version` | No | Trellis version record used by update/migration logic. |
+| `.trellis/.version` | No | Polygon version record used by update/migration logic. |
 | `.trellis/.template-hashes.json` | No | Template hash record. Do not hand-write business rules here. |
 
 ## Platform Directories
@@ -49,7 +49,7 @@ When modifying a platform directory, also confirm whether `.trellis/workflow.md`
 
 ## Meaning Of Template Hashes
 
-`.trellis/.template-hashes.json` records the content hash from the last time Trellis wrote a template file. `trellis update` uses it to distinguish three cases:
+`.trellis/.template-hashes.json` records the content hash from the last time Polygon wrote a template file. `trellis update` uses it to distinguish three cases:
 
 | Case | Update behavior |
 | --- | --- |
@@ -57,7 +57,7 @@ When modifying a platform directory, also confirm whether `.trellis/workflow.md`
 | File was modified by the user | Prompt the user to overwrite, keep, or generate `.new`. |
 | File is no longer a current template | It may be deleted, renamed, or preserved according to migration rules. |
 
-When an AI customizes local Trellis files, it does not need to maintain hashes manually. It is normal for Trellis update to recognize the result as "modified by the user."
+When an AI customizes local Polygon files, it does not need to maintain hashes manually. It is normal for Polygon update to recognize the result as "modified by the user."
 
 ## Local Customization Boundaries
 
@@ -72,9 +72,9 @@ Editable by default:
 Do not edit by default:
 
 - Global npm install directory
-- `node_modules/@subaru486/trellis`
-- Trellis GitHub repository source code
+- `node_modules/@subaru486/polygon`
+- Polygon GitHub repository source code
 - Concrete state files under `.trellis/.runtime/**`
 - Hash contents inside `.trellis/.template-hashes.json`
 
-Switch to the Trellis CLI source-code perspective only when the user explicitly wants to contribute upstream.
+Switch to the Polygon CLI source-code perspective only when the user explicitly wants to contribute upstream.

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Codex Session Start Hook - Inject Trellis context into Codex sessions.
+Codex Session Start Hook - Inject Polygon context into Codex sessions.
 
 Output format follows Codex hook protocol:
   stdout JSON → { hookSpecificOutput: { hookEventName: "SessionStart", additionalContext: "..." } }
@@ -97,7 +97,7 @@ SUB-AGENT NOTICE - READ FIRST IF SPAWNED VIA spawn_agent
 If your parent session spawned you via spawn_agent with an explicit task
 message above this hook output, that message is your only job.
 - Execute the parent message exactly as written, then return.
-- Ignore all Trellis workflow guidance below this notice.
+- Ignore all Polygon workflow guidance below this notice.
 - Do NOT call task.py start, task.py add-context, or task.py archive.
 - Do NOT call wait_agent or spawn_agent.
 - Do NOT modify .trellis/tasks/* or any other file unless the parent message
@@ -117,7 +117,7 @@ def should_skip_injection() -> bool:
 
 
 def configure_project_encoding(project_dir: Path) -> None:
-    """Reuse Trellis' shared Windows stdio encoding helper before JSON output."""
+    """Reuse Polygon' shared Windows stdio encoding helper before JSON output."""
     scripts_dir = project_dir / ".trellis" / "scripts"
     if str(scripts_dir) not in sys.path:
         sys.path.insert(0, str(scripts_dir))
@@ -298,7 +298,7 @@ def main() -> None:
     output.write("\n\n")
 
     output.write("""<session-context>
-You are starting a new session in a Trellis-managed project.
+You are starting a new session in a Polygon-managed project.
 Read and follow all instructions below carefully.
 </session-context>
 
@@ -361,7 +361,7 @@ When the user sends the first message, follow <task-status> and use your own jud
     context = output.getvalue()
     result = {
         "suppressOutput": True,
-        "systemMessage": f"Trellis context injected ({len(context)} chars)",
+        "systemMessage": f"Polygon context injected ({len(context)} chars)",
         "hookSpecificOutput": {
             "hookEventName": "SessionStart",
             "additionalContext": context,

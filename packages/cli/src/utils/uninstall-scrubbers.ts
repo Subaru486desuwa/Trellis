@@ -20,7 +20,7 @@ export interface ScrubResult {
 /**
  * Test whether a hook command string references any of the given manifest paths.
  *
- * Trellis-emitted hook commands always have the shape
+ * Polygon-emitted hook commands always have the shape
  *   `<python-cmd> <manifest-path>`
  * so the trailing whitespace-delimited token is the script path. We compare
  * that last token (with surrounding quotes stripped) against the manifest
@@ -219,7 +219,7 @@ export function scrubOpencodePackageJson(content: string): ScrubResult {
 }
 
 /**
- * Trellis-specific values written by the Pi configurator.
+ * Polygon-specific values written by the Pi configurator.
  *
  * The `extensions`/`skills`/`prompts` arrays are paths relative to `.pi/`. We
  * remove the exact entries that the Pi configurator emits.
@@ -308,7 +308,7 @@ export function scrubPiSettings(content: string): ScrubResult {
  * The current trellis-emitted file has two distinct chunks:
  * 1. The line `project_doc_fallback_filenames = ["AGENTS.md"]`
  * 2. A multi-line comment block that begins with the marker
- *    `# NOTE: Trellis's SessionStart + UserPromptSubmit hooks require opt-in.`
+ *    `# NOTE: Polygon's SessionStart + UserPromptSubmit hooks require opt-in.`
  *    and continues through `# be injected into Codex sessions.`
  *
  * Plus the leading "Project-scoped Codex defaults" header comments.
@@ -324,16 +324,16 @@ export function scrubPiSettings(content: string): ScrubResult {
  */
 export function scrubCodexConfigToml(content: string): ScrubResult {
   const trellisCommentMarkers = [
-    "Project-scoped Codex defaults for Trellis workflows.",
+    "Project-scoped Codex defaults for Polygon workflows.",
     "Codex loads this after ~/.codex/config.toml when you work in this project.",
     "Keep AGENTS.md as the primary project instruction file.",
-    "NOTE: Trellis's SessionStart + UserPromptSubmit hooks require opt-in.",
+    "NOTE: Polygon's SessionStart + UserPromptSubmit hooks require opt-in.",
     "Add the following to your USER-level config at ~/.codex/config.toml",
     "(not this project file — features.* must be enabled globally):",
     "[features]",
     "hooks = true",
     "codex_hooks = true",
-    "Without this flag, hooks.json is ignored and Trellis context won't",
+    "Without this flag, hooks.json is ignored and Polygon context won't",
     "be injected into Codex sessions.",
   ];
 
