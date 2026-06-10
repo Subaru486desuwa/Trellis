@@ -207,7 +207,7 @@ function buildPlan(cwd: string, hashes: Record<string, string>): UninstallPlan {
 function renderPlan(cwd: string, plan: UninstallPlan): void {
   const trellisDir = path.join(cwd, DIR_NAMES.WORKFLOW);
 
-  console.log(chalk.bold("\nTrellis uninstall plan\n"));
+  console.log(chalk.bold("\nPolygon uninstall plan\n"));
 
   const deletePaths = plan.deletions
     .filter((d) => !d.missing)

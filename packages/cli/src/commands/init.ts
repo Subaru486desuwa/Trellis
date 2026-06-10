@@ -1144,7 +1144,7 @@ export async function init(options: InitOptions): Promise<void> {
     // Ask for developer name if not detected and not in yes mode
     console.log(
       chalk.gray(
-        "\nTrellis supports team collaboration - each developer has their own\n" +
+        "\nPolygon supports team collaboration - each developer has their own\n" +
           `workspace directory (${PATHS.WORKSPACE}/{name}/) to track AI sessions.\n` +
           "Tip: Usually this is your git username (git config user.name).\n",
       ),

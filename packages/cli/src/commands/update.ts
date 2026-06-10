@@ -1818,7 +1818,7 @@ export async function update(options: UpdateOptions): Promise<void> {
     return;
   }
 
-  console.log(chalk.cyan("\nTrellis Update"));
+  console.log(chalk.cyan("\nPolygon Update"));
   console.log(chalk.cyan("══════════════\n"));
 
   // Set up proxy before any network calls (npm version check)
