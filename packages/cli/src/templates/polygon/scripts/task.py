@@ -46,6 +46,7 @@ from common.active_task import (
 )
 from common.io import read_json, write_json
 from common.activity import append_activity, read_activity
+from common.git import run_git
 from common.task_utils import resolve_task_dir, run_task_hooks
 from common.tasks import iter_active_tasks, children_progress
 
@@ -256,6 +257,51 @@ def cmd_activity_log(args: argparse.Namespace) -> int:
         action = record.get("action", "?")
         note = record.get("note", "")
         print(f"{ts}  [{platform}/{model}] {action}: {note}")
+    return 0
+
+
+# Commit subjects produced by Polygon's own bookkeeping auto-commits. The
+# post-commit hook skips these so the activity log records real work, not the
+# archive/journal commits the workflow makes on its own.
+_BOOKKEEPING_COMMIT_PREFIXES = (
+    "chore(task): archive ",
+    "chore: record journal",
+)
+
+
+def cmd_activity_commit(args: argparse.Namespace) -> int:
+    """Stamp the just-made git commit onto the active task's activity log.
+
+    Invoked by the git ``post-commit`` hook. Designed to NEVER disrupt a
+    commit: it always returns 0 and stays silent when there's nothing to do
+    (no active task, a Polygon bookkeeping commit, or any git error).
+    """
+    repo_root = get_repo_root()
+
+    # Resolve the active task the same way activity-append does (session
+    # context key, else single-session fallback). No active task → no-op.
+    current = get_current_task(repo_root)
+    full = (repo_root / current) if current else None
+    if full is None or not full.is_dir():
+        return 0
+
+    # Read the commit just made (HEAD). Short hash + subject.
+    code, out, _ = run_git(["log", "-1", "--format=%h%x1f%s"], cwd=repo_root)
+    if code != 0 or "\x1f" not in out:
+        return 0
+    short_hash, subject = out.strip().split("\x1f", 1)
+    subject = subject.strip()
+
+    # Skip Polygon's own bookkeeping commits.
+    if any(subject.startswith(p) for p in _BOOKKEEPING_COMMIT_PREFIXES):
+        return 0
+
+    append_activity(
+        full,
+        "commit",
+        f"{short_hash} {subject}",
+        model=args.model,
+    )
     return 0
 
 
@@ -527,6 +573,13 @@ def main() -> int:
     )
     p_act_log.add_argument("dir", nargs="?", help="Task directory (default: active task)")
 
+    # activity-commit (invoked by the git post-commit hook)
+    p_act_commit = subparsers.add_parser(
+        "activity-commit",
+        help="Stamp the latest git commit onto the active task (post-commit hook)",
+    )
+    p_act_commit.add_argument("--model", help="Model id (default: env POLYGON_ACTIVITY_MODEL or null)")
+
     # set-branch
     p_branch = subparsers.add_parser("set-branch", help="Set git branch")
     p_branch.add_argument("dir", help="Task directory")
@@ -582,6 +635,7 @@ def main() -> int:
         "finish": cmd_finish,
         "activity-append": cmd_activity_append,
         "activity-log": cmd_activity_log,
+        "activity-commit": cmd_activity_commit,
         "set-branch": cmd_set_branch,
         "set-base-branch": cmd_set_base_branch,
         "set-scope": cmd_set_scope,

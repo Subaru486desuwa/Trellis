@@ -35,7 +35,11 @@ import {
 } from "../templates/markdown/index.js";
 
 import { writeFile, ensureDir } from "../utils/file-writer.js";
-import { replacePythonCommandLiterals } from "./shared.js";
+import { installPostCommitHook } from "../utils/git-hooks.js";
+import {
+  replacePythonCommandLiterals,
+  getPythonCommandForPlatform,
+} from "./shared.js";
 import {
   sanitizePkgName,
   type ProjectType,
@@ -118,6 +122,21 @@ export async function createWorkflowStructure(
 
   // Create tasks/ directory
   ensureDir(path.join(cwd, PATHS.TASKS));
+
+  // Install the git post-commit activity hook (stamps each commit onto the
+  // active task's activity log for cross-LLM handoff). Safe no-op outside a
+  // git repo or when a foreign post-commit hook already exists.
+  const hookResult = installPostCommitHook(
+    cwd,
+    getPythonCommandForPlatform(),
+  );
+  if (hookResult.status === "installed" || hookResult.status === "refreshed") {
+    console.log("🪝 Installed git post-commit hook (commit → activity log)");
+  } else if (hookResult.reason === "foreign-hook") {
+    console.log(
+      "⚠️  Existing post-commit hook found — add `python3 .polygon/scripts/task.py activity-commit` to it to log commits onto tasks",
+    );
+  }
 
   // Create spec templates based on project type
   // These are NOT dogfooded - they are generic templates for new projects

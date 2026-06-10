@@ -6467,3 +6467,114 @@ describe("regression: multi-LLM activity log (activity.jsonl provenance)", () =>
     expect(journal).toContain("**Agent**: claude");
   });
 });
+
+describe("regression: post-commit activity hook (task.py activity-commit)", () => {
+  let tmpDir: string;
+
+  function git(args: string[]): void {
+    const r = spawnSync("git", args, { cwd: tmpDir, encoding: "utf-8" });
+    if (r.status !== 0) {
+      throw new Error(`git ${args.join(" ")} failed: ${r.stderr ?? ""}`);
+    }
+  }
+
+  function runTask(args: string[]): { status: number; stdout: string } {
+    const result = spawnSync(
+      "python3",
+      [path.join(tmpDir, ".polygon", "scripts", "task.py"), ...args],
+      {
+        cwd: tmpDir,
+        encoding: "utf-8",
+        env: { ...process.env, POLYGON_CONTEXT_ID: "claude_committest" },
+      },
+    );
+    return { status: result.status ?? 1, stdout: result.stdout ?? "" };
+  }
+
+  function activityActions(taskDir: string): string[] {
+    const p = path.join(taskDir, "activity.jsonl");
+    if (!fs.existsSync(p)) return [];
+    return fs
+      .readFileSync(p, "utf-8")
+      .trim()
+      .split("\n")
+      .filter(Boolean)
+      .map((l) => JSON.parse(l).action);
+  }
+
+  function startedTaskDir(): string {
+    runTask(["create", "commit hook smoke"]);
+    const tasksRoot = path.join(tmpDir, ".polygon", "tasks");
+    const dir = fs
+      .readdirSync(tasksRoot)
+      .find((d) => d.endsWith("-commit-hook-smoke"));
+    if (!dir) throw new Error("task dir not created");
+    runTask(["start", dir]);
+    return path.join(tasksRoot, dir);
+  }
+
+  beforeEach(() => {
+    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "polygon-commit-"));
+    const scriptsDir = path.join(tmpDir, ".polygon", "scripts");
+    for (const [relativePath, content] of getAllScripts()) {
+      const absPath = path.join(scriptsDir, relativePath);
+      fs.mkdirSync(path.dirname(absPath), { recursive: true });
+      fs.writeFileSync(absPath, content);
+    }
+    fs.writeFileSync(
+      path.join(tmpDir, ".polygon", ".developer"),
+      "name=test-dev\ninitialized_at=2026-06-10T00:00:00Z\n",
+      "utf-8",
+    );
+    git(["init", "-q"]);
+    git(["config", "user.email", "t@l"]);
+    git(["config", "user.name", "t"]);
+    git(["add", "-A"]);
+    git(["commit", "-qm", "init"]);
+  });
+
+  afterEach(() => {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  });
+
+  it("[commit-hook] stamps a real work commit onto the active task", () => {
+    const taskDir = startedTaskDir();
+    fs.writeFileSync(path.join(tmpDir, "feature.txt"), "x");
+    git(["add", "-A"]);
+    git(["commit", "-qm", "feat: add feature"]);
+
+    const res = runTask(["activity-commit"]);
+    expect(res.status).toBe(0);
+
+    const lines = fs
+      .readFileSync(path.join(taskDir, "activity.jsonl"), "utf-8")
+      .trim()
+      .split("\n")
+      .map((l) => JSON.parse(l));
+    const commitEntry = lines.find((l) => l.action === "commit");
+    expect(commitEntry).toBeDefined();
+    expect(commitEntry.note).toContain("feat: add feature");
+  });
+
+  it("[commit-hook] skips Polygon bookkeeping commits", () => {
+    const taskDir = startedTaskDir();
+    fs.writeFileSync(path.join(tmpDir, "j.txt"), "x");
+    git(["add", "-A"]);
+    git(["commit", "-qm", "chore: record journal"]);
+
+    runTask(["activity-commit"]);
+    expect(activityActions(taskDir)).not.toContain("commit");
+  });
+
+  it("[commit-hook] is a silent no-op when there is no active task", () => {
+    const taskDir = startedTaskDir();
+    runTask(["finish"]);
+    fs.writeFileSync(path.join(tmpDir, "x.txt"), "x");
+    git(["add", "-A"]);
+    git(["commit", "-qm", "feat: orphan commit"]);
+
+    const res = runTask(["activity-commit"]);
+    expect(res.status).toBe(0);
+    expect(activityActions(taskDir)).not.toContain("commit");
+  });
+});

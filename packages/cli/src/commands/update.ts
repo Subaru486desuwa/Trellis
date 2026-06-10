@@ -58,7 +58,11 @@ import {
   isManagedPath,
   isManagedRootDir,
 } from "../configurators/index.js";
-import { replacePythonCommandLiterals } from "../configurators/shared.js";
+import {
+  replacePythonCommandLiterals,
+  getPythonCommandForPlatform,
+} from "../configurators/shared.js";
+import { installPostCommitHook } from "../utils/git-hooks.js";
 import { pruneOrphanManifestKeys } from "../utils/manifest-prune.js";
 import {
   fetchRegistrySpecTemplates,
@@ -1942,6 +1946,26 @@ export async function update(options: UpdateOptions): Promise<void> {
 
   console.log(chalk.cyan("\nPolygon Update"));
   console.log(chalk.cyan("══════════════\n"));
+
+  // Install/refresh the git post-commit activity hook so existing projects
+  // pick it up on update. Idempotent; quiet when our hook is already present.
+  if (!options.dryRun) {
+    const hookResult = installPostCommitHook(cwd, getPythonCommandForPlatform());
+    if (hookResult.status === "installed") {
+      console.log(
+        chalk.green("🪝 Installed git post-commit hook (commit → activity log)\n"),
+      );
+    } else if (
+      hookResult.status === "skipped" &&
+      hookResult.reason === "foreign-hook"
+    ) {
+      console.log(
+        chalk.yellow(
+          "⚠️  Existing post-commit hook found — add `python3 .polygon/scripts/task.py activity-commit` to log commits onto tasks\n",
+        ),
+      );
+    }
+  }
 
   // Set up proxy before any network calls (npm version check)
   setupProxy();

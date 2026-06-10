@@ -1,0 +1,9 @@
+{
+  "version": "0.8.0",
+  "description": "Auto-log commits onto the active task: git post-commit activity hook.",
+  "breaking": false,
+  "recommendMigrate": false,
+  "changelog": "**Polygon 0.8.0 — commits become activity-log entries automatically.**\n\n- New git `post-commit` hook (installed by `polygon init` and `polygon update`) stamps every real commit onto the active task's `activity.jsonl` via `task.py activity-commit` — `<short-hash> <subject>` with platform/model. This closes the cross-LLM mid-task handoff gap: a Codex/Claude session picking up a task now sees the prior agent's commit trail without anyone running `activity-append` by hand.\n- Polygon's own bookkeeping commits (`chore(task): archive ...`, `chore: record journal`) are skipped, and commits made with no active task are a silent no-op.\n- The hook never disrupts a commit (always exits 0) and never clobbers a pre-existing foreign `post-commit` hook — if one exists, `polygon update` prints how to wire activity-commit in manually.",
+  "migrations": [],
+  "notes": "No file migrations. Run `polygon update` (no `--migrate` needed) — it installs the post-commit hook into `.git/hooks/` (honoring core.hooksPath; skipped outside a git repo or when a foreign hook exists)."
+}
